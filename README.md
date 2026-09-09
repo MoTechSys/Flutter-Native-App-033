@@ -10,7 +10,18 @@
 | الإصدار | `0.2.0+2` |
 | الاختبارات | `flutter test` → 93/93 |
 | التحليل | `flutter analyze` → 0 |
-| مستودع GitHub | https://github.com/MoTechSys/Flutter-Native-App-033 |
+| مستودع GitHub | https://github.com/MoTechSys/Flutter-Native-App-033 (فرع `main`) |
+| سجل الإصدارات | [`CHANGELOG.md`](CHANGELOG.md) — **المرجع الوحيد** لأرقام الإصدارات وروابط APK |
+
+## تحميل التطبيق (رابط عام دائم)
+آخر إصدار: **v0.2.0 (build 2)** — https://github.com/MoTechSys/Flutter-Native-App-033/releases/tag/sijil-v0.2.0
+
+| الملف | لمن | الحجم |
+|---|---|---|
+| [sijil-v0.2.0-arm64-v8a.apk](https://github.com/MoTechSys/Flutter-Native-App-033/releases/download/sijil-v0.2.0/sijil-v0.2.0-arm64-v8a.apk) | الهواتف الحديثة — **ابدأ به** | 23.2 MB |
+| [sijil-v0.2.0-armeabi-v7a.apk](https://github.com/MoTechSys/Flutter-Native-App-033/releases/download/sijil-v0.2.0/sijil-v0.2.0-armeabi-v7a.apk) | الهواتف القديمة الرخيصة | 21.3 MB |
+
+كل الإصدارات: https://github.com/MoTechSys/Flutter-Native-App-033/releases
 
 ## ماذا يفعل التطبيق
 - **الرئيسية** لوحة تحكم: إجمالي "لك عند الناس"، المتأخرون، اليوم، 4 اختصارات، صف آخر الحركات (صور).

@@ -85,3 +85,33 @@ dart run tool/gen_activation.dart <deviceId> Y1 5    # 5 أكواد مختلفة
 - لا تغيّر `applicationId` (`com.sijildebt.ledger`) — يُعتبر تطبيقاً مختلفاً عند الزبائن.
 - لا تلمس جداول الدفتر إلا عبر `LedgerService` (القواعد R1–R10 في `04_LEDGER_RULES.md`).
 - لا تحدّث Flutter/Dart (مثبّتان على 3.35.4 / 3.9.2).
+
+## 8. نشر APK كرابط عام دائم (GitHub Release)
+الرابط من الساندبوكس يموت بانتهاء الجلسة. الرابط الدائم = GitHub Release على الوسم. لا يوجد `gh` في الساندبوكس، فنستخدم REST API بالتوكن الذي يضعه `setup_github_environment` في `~/.git-credentials`:
+
+```bash
+cd /home/user/flutter_app
+V=0.2.0                                # نفس رقم pubspec بدون +N
+TOKEN=$(grep -o 'https://[^@]*@github.com' ~/.git-credentials | head -1 | sed 's#https://##;s#@github.com##' | cut -d: -f2)
+REPO=MoTechSys/Flutter-Native-App-033
+
+# 1) الوسم (إن لم يكن موجوداً)
+git tag -a sijil-v$V -m "Sijil v$V" && git push origin --tags
+
+# 2) إنشاء الإصدار (prerelease=true حتى ينتهي الاختبار الميداني)
+RID=$(curl -s -X POST -H "Authorization: token $TOKEN" https://api.github.com/repos/$REPO/releases \
+  -d "{\"tag_name\":\"sijil-v$V\",\"name\":\"سِجِل v$V\",\"body\":\"انظر CHANGELOG.md\",\"prerelease\":true}" | python3 -c "import json,sys;print(json.load(sys.stdin)['id'])")
+
+# 3) رفع الملفين بأسماء واضحة
+for ABI in arm64-v8a armeabi-v7a; do
+  curl -s -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/vnd.android.package-archive" \
+    --data-binary @build/app/outputs/flutter-apk/app-$ABI-release.apk \
+    "https://uploads.github.com/repos/$REPO/releases/$RID/assets?name=sijil-v$V-$ABI.apk" > /dev/null
+done
+
+# 4) تحقق أن الرابط عام (يجب 200 بلا توكن)
+curl -sIL https://github.com/$REPO/releases/download/sijil-v$V/sijil-v$V-arm64-v8a.apk | grep HTTP | tail -1
+```
+- صيغة الرابط المباشر الثابتة: `https://github.com/MoTechSys/Flutter-Native-App-033/releases/download/sijil-v<V>/sijil-v<V>-<abi>.apk`
+- سجّل الروابط + SHA-256 في `CHANGELOG.md` (جذر المشروع). هو **المرجع الوحيد** لأرقام الإصدارات.
+- عند اعتماد الإصدار بعد الميدان: عدّل الإصدار `prerelease:false` من صفحة GitHub.

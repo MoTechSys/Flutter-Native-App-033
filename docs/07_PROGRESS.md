@@ -17,7 +17,8 @@
 | نقل أصل غير مستخدم (337KB) خارج APK | ✅ | `assets/images/legacy_logo_reference.png` → `docs/design/` |
 | الإصدار | ✅ | `0.2.0+2` (pubspec + القائمة الجانبية) |
 | README + 12_RELEASE_GUIDE + تحديث 00/05/07 | ✅ | للتسليم لأي وكيل جديد |
-| رفع إلى GitHub `MoTechSys/Flutter-Native-App-033` | ✅ | فرع `main` |
+| رفع إلى GitHub `MoTechSys/Flutter-Native-App-033` | ✅ | فرع `main`، وسم `sijil-v0.2.0`؛ المشروع السابق "كتابي" محفوظ على `kitabi-archive` |
+| **GitHub Release عام** + `CHANGELOG.md` | ✅ | https://github.com/MoTechSys/Flutter-Native-App-033/releases/tag/sijil-v0.2.0 — الروابط المباشرة + SHA-256 في `CHANGELOG.md` |
 | اختبار ميداني على هاتف (كاميرا/صوت/واتساب/PDF/نسخ/Drive) | ⏳ | قائمة الفحص في `12_RELEASE_GUIDE.md` §6 — **الخطوة التالية** |
 | تغيير `Activation.secret` قبل البيع | ⚠️ | إلزامي قبل أول زبون حقيقي |
 
