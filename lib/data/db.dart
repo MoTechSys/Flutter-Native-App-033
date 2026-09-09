@@ -26,11 +26,17 @@ class KitabiDb {
     final path = pathOverride ?? '${await getDatabasesPath()}/kitabi.db';
     _db = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onConfigure: (d) => d.execute('PRAGMA foreign_keys = ON'),
       onCreate: (d, _) async {
         await _schema(d);
         await seedCatalog(d);
+      },
+      // ترقية النسخ المثبّتة سابقاً (v1 → v2): عمود الدور للمستخدم
+      onUpgrade: (d, from, to) async {
+        if (from < 2) {
+          await d.execute('ALTER TABLE users ADD COLUMN role INTEGER NOT NULL DEFAULT 0');
+        }
       },
     );
   }
@@ -44,6 +50,7 @@ class KitabiDb {
         password TEXT NOT NULL,
         phone TEXT,
         city TEXT,
+        role INTEGER NOT NULL DEFAULT 0, -- 0 عادي · 1 مدير
         created_at TEXT NOT NULL
       )''');
     await d.execute('''

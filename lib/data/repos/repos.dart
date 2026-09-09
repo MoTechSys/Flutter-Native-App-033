@@ -22,6 +22,7 @@ class UserRepo {
     required String password,
     String? phone,
     String? city,
+    UserRole role = UserRole.customer,
   }) async {
     final e = email.trim().toLowerCase();
     final dup = await _db.query('users', where: 'email = ?', whereArgs: [e]);
@@ -32,10 +33,13 @@ class UserRepo {
       'password': _hash(password),
       'phone': phone,
       'city': city,
+      'role': role == UserRole.admin ? 1 : 0,
       'created_at': _now(),
     });
     return null;
   }
+
+  Future<int> countAll() async => Sqflite.firstIntValue(await _db.rawQuery('SELECT COUNT(*) FROM users')) ?? 0;
 
   Future<AppUser?> authenticate(String email, String password) async {
     final rows = await _db.query(
@@ -108,6 +112,43 @@ class CatalogRepo {
         [categoryId],
       )) ??
       0;
+
+  // ---------------- كتابة (لوحة المدير) ----------------
+
+  /// إضافة كتاب جديد؛ يُعيد المعرّف المُولَّد
+  Future<int> insertBook(Book b) async {
+    final row = b.toRow()..remove('id');
+    return _db.insert('books', row);
+  }
+
+  Future<void> updateBook(Book b) =>
+      _db.update('books', b.toRow()..remove('id'), where: 'id = ?', whereArgs: [b.id]);
+
+  /// حذف كتاب — يحذف تلقائياً من السلال والمفضلات والمراجعات (CASCADE)
+  Future<void> deleteBook(int id) => _db.delete('books', where: 'id = ?', whereArgs: [id]);
+
+  Future<int> insertCategory({required String name, required String slug, required int color}) =>
+      _db.insert('categories', {'name': name, 'slug': slug, 'color': color});
+
+  Future<void> updateCategory(Category c) =>
+      _db.update('categories', c.toRow()..remove('id'), where: 'id = ?', whereArgs: [c.id]);
+
+  /// حذف تصنيف — مرفوض إن كان فيه كتب (يُعيد false)
+  Future<bool> deleteCategory(int id) async {
+    if (await countByCategory(id) > 0) return false;
+    await _db.delete('categories', where: 'id = ?', whereArgs: [id]);
+    return true;
+  }
+
+  /// أكثر الكتب مبيعاً (من عناصر الطلبات)
+  Future<List<(Book, int)>> bestSellers({int limit = 5}) async {
+    final rows = await _db.rawQuery('''
+      SELECT b.*, SUM(oi.qty) AS sold FROM order_items oi
+      JOIN books b ON b.id = oi.book_id
+      GROUP BY oi.book_id ORDER BY sold DESC LIMIT ?
+    ''', [limit]);
+    return rows.map((r) => (Book.fromRow(r), (r['sold'] as num).toInt())).toList();
+  }
 }
 
 // ------------------------------------------------------------ Cart
@@ -218,6 +259,11 @@ class OrderRepo {
     });
     return (await byId(id))!;
   }
+
+  Future<int> countAll() async => Sqflite.firstIntValue(await _db.rawQuery('SELECT COUNT(*) FROM orders')) ?? 0;
+
+  Future<double> revenue() async =>
+      ((await _db.rawQuery('SELECT COALESCE(SUM(total),0) AS t FROM orders')).first['t'] as num).toDouble();
 
   Future<List<Order>> forUser(int userId) async {
     final rows = await _db.query(

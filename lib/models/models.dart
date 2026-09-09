@@ -2,12 +2,27 @@
 // كِتابي - نماذج البيانات
 // ============================================================
 
+/// دور المستخدم: عادي (يتسوّق) أو مدير (يدير الكتالوج أيضاً)
+enum UserRole { customer, admin }
+
+extension UserRoleX on UserRole {
+  String get label => switch (this) {
+    UserRole.customer => 'مستخدم',
+    UserRole.admin => 'مدير المتجر',
+  };
+  String get hint => switch (this) {
+    UserRole.customer => 'يتصفح الكتب ويشتري ويقيّم ويتابع طلباته',
+    UserRole.admin => 'كل صلاحيات المستخدم + إضافة/تعديل/حذف الكتب والتصنيفات',
+  };
+}
+
 class AppUser {
   final int id;
   final String name;
   final String email;
   final String? phone;
   final String? city;
+  final UserRole role;
 
   const AppUser({
     required this.id,
@@ -15,7 +30,10 @@ class AppUser {
     required this.email,
     this.phone,
     this.city,
+    this.role = UserRole.customer,
   });
+
+  bool get isAdmin => role == UserRole.admin;
 
   factory AppUser.fromRow(Map<String, Object?> r) => AppUser(
     id: r['id'] as int,
@@ -23,6 +41,7 @@ class AppUser {
     email: (r['email'] ?? '') as String,
     phone: r['phone'] as String?,
     city: r['city'] as String?,
+    role: ((r['role'] as int?) ?? 0) == 1 ? UserRole.admin : UserRole.customer,
   );
 }
 
@@ -84,6 +103,39 @@ class Book {
     required this.coverColor,
     this.featured = false,
   });
+
+  /// هل الغلاف ملف على الجهاز (أضافه المدير) أم من Assets؟
+  bool get coverIsFile => !cover.startsWith('assets/');
+
+  Book copyWith({
+    int? categoryId,
+    String? title,
+    String? author,
+    String? description,
+    double? price,
+    double? oldPrice,
+    bool clearOldPrice = false,
+    double? rating,
+    int? pages,
+    int? year,
+    String? cover,
+    int? coverColor,
+    bool? featured,
+  }) => Book(
+    id: id,
+    categoryId: categoryId ?? this.categoryId,
+    title: title ?? this.title,
+    author: author ?? this.author,
+    description: description ?? this.description,
+    price: price ?? this.price,
+    oldPrice: clearOldPrice ? null : (oldPrice ?? this.oldPrice),
+    rating: rating ?? this.rating,
+    pages: pages ?? this.pages,
+    year: year ?? this.year,
+    cover: cover ?? this.cover,
+    coverColor: coverColor ?? this.coverColor,
+    featured: featured ?? this.featured,
+  );
 
   bool get hasDiscount => oldPrice != null && oldPrice! > price;
   int get discountPercent =>

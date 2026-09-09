@@ -29,6 +29,42 @@ class CatalogState extends ChangeNotifier {
   }
 
   Category? category(int id) => _categories.where((c) => c.id == id).firstOrNull;
+
+  // ---------------- كتابة (لوحة المدير) — كل عملية تُحدّث SQLite ثم تُعيد التحميل ----------------
+
+  Future<Book> addBook(Book draft) async {
+    final id = await _repo.insertBook(draft);
+    await load();
+    return book(id)!;
+  }
+
+  Future<void> updateBook(Book b) async {
+    await _repo.updateBook(b);
+    await load();
+  }
+
+  Future<void> deleteBook(int id) async {
+    await _repo.deleteBook(id);
+    await load();
+  }
+
+  Future<Category> addCategory({required String name, required String slug, required int color}) async {
+    final id = await _repo.insertCategory(name: name, slug: slug, color: color);
+    await load();
+    return category(id)!;
+  }
+
+  Future<void> updateCategory(Category c) async {
+    await _repo.updateCategory(c);
+    await load();
+  }
+
+  /// يُعيد false إن كان التصنيف يحوي كتباً
+  Future<bool> deleteCategory(int id) async {
+    final ok = await _repo.deleteCategory(id);
+    if (ok) await load();
+    return ok;
+  }
   Book? book(int id) => _books.where((b) => b.id == id).firstOrNull;
 
   List<Book> get featured => _books.where((b) => b.featured).toList();

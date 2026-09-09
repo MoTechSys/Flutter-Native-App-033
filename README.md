@@ -8,7 +8,7 @@
 - تسجيل/دخول مع تحقق، واستعادة كلمة المرور برمز OTP في 3 خطوات.
 - زر الرجوع يعود خطوة بخطوة داخل كل تبويب ولا يخرج من التطبيق فجأة.
 
-التوثيق الكامل: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · ملاحظات الإصدار: [`docs/RELEASE_NOTES_1.0.0.md`](docs/RELEASE_NOTES_1.0.0.md)
+التوثيق الكامل: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · ملاحظات الإصدار: [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES_1.0.0.md)
 
 ```bash
 flutter pub get

@@ -2,11 +2,14 @@
 // كِتابي - عناصر واجهة مشتركة
 // ============================================================
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../app_theme.dart';
 import '../../models/models.dart';
+import 'file_image_io.dart' if (dart.library.js_interop) 'file_image_web.dart';
 
 final _money = NumberFormat('#,##0.##', 'en');
 String fmtPrice(double v) => '${_money.format(v)} ر.س';
@@ -36,11 +39,7 @@ class BookCover extends StatelessWidget {
       child: SizedBox(
         width: width,
         height: h,
-        child: Image.asset(
-          book.cover,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _Fallback(book: book),
-        ),
+        child: coverImage(book, fit: BoxFit.cover),
       ),
     );
     final framed = Container(
@@ -54,6 +53,24 @@ class BookCover extends StatelessWidget {
     );
     return hero ? Hero(tag: 'cover-${book.id}', child: framed) : framed;
   }
+}
+
+/// يختار مصدر الغلاف: Asset مضمّن، أو ملف اختاره المدير من الجهاز،
+/// أو (على الويب) صورة مُرمّزة base64، وإلا غلاف احتياطي بلون التصنيف.
+Widget coverImage(Book book, {BoxFit fit = BoxFit.cover}) {
+  Widget fallback(BuildContext _, Object _, StackTrace? _) => _Fallback(book: book);
+  final c = book.cover;
+  if (c.isEmpty || c == 'generated') return _Fallback(book: book);
+  if (c.startsWith('assets/')) return Image.asset(c, fit: fit, errorBuilder: fallback);
+  if (c.startsWith('data:')) {
+    try {
+      final bytes = base64Decode(c.substring(c.indexOf(',') + 1));
+      return Image.memory(bytes, fit: fit, errorBuilder: fallback);
+    } catch (_) {
+      return _Fallback(book: book);
+    }
+  }
+  return fileImage(c, fit: fit, onError: fallback);
 }
 
 class _Fallback extends StatelessWidget {

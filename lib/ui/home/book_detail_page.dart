@@ -11,6 +11,7 @@ import '../../data/repos/repos.dart';
 import '../../models/models.dart';
 import '../../state/session.dart';
 import '../../state/store_state.dart';
+import '../admin/book_form_page.dart';
 import '../shared/widgets.dart';
 import '../shell.dart';
 
@@ -39,8 +40,10 @@ class _BookDetailPageState extends State<BookDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final b = widget.book;
     final catalog = context.watch<CatalogState>();
+    // نقرأ النسخة الحيّة من الكتالوج حتى تظهر تعديلات المدير فوراً
+    final b = catalog.book(widget.book.id) ?? widget.book;
+    final isAdmin = context.watch<Session>().isAdmin;
     final fav = context.watch<FavoritesState>();
     final cart = context.watch<CartState>();
     final cat = catalog.category(b.categoryId);
@@ -73,6 +76,31 @@ class _BookDetailPageState extends State<BookDetailPage> {
                     children: [
                       IconButton(icon: const Icon(Icons.arrow_forward), onPressed: () => Navigator.pop(context)),
                       const Spacer(),
+                      if (isAdmin) ...[
+                        IconButton(
+                          tooltip: 'تعديل الكتاب (مدير)',
+                          icon: const Icon(Icons.edit_outlined, color: Palette.gold),
+                          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BookFormPage(book: b))),
+                        ),
+                        IconButton(
+                          tooltip: 'حذف الكتاب (مدير)',
+                          icon: const Icon(Icons.delete_outline, color: Palette.danger),
+                          onPressed: () async {
+                            final ok = await confirm(
+                              context,
+                              title: 'حذف الكتاب',
+                              message: 'سيُحذف "${b.title}" نهائياً من المتجر. هل أنت متأكد؟',
+                              okLabel: 'حذف',
+                              destructive: true,
+                            );
+                            if (!ok || !context.mounted) return;
+                            await context.read<CatalogState>().deleteBook(b.id);
+                            if (!context.mounted) return;
+                            notify(context, 'تم حذف "${b.title}"', icon: Icons.delete_outline);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
                       IconButton(
                         tooltip: 'المفضلة',
                         icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Palette.danger : Palette.ivory),

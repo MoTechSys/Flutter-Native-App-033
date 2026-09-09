@@ -7,10 +7,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
 import '../../data/repos/repos.dart';
 import '../../models/models.dart';
+import '../../state/store_state.dart';
 import '../shared/widgets.dart';
 
 class OrderDetailPage extends StatefulWidget {
@@ -293,14 +295,20 @@ class _LineTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Container(
-        width: 38,
-        height: 50,
-        decoration: BoxDecoration(
-          color: Palette.walnut,
-          borderRadius: BorderRadius.circular(6),
-          image: DecorationImage(image: AssetImage('assets/covers/book_${line.bookId}.png'), fit: BoxFit.cover),
-        ),
+      leading: Builder(
+        builder: (context) {
+          final book = context.read<CatalogState>().book(line.bookId);
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: 38,
+              height: 50,
+              child: book != null
+                  ? coverImage(book)
+                  : Container(color: Palette.walnut, child: const Icon(Icons.menu_book, size: 18, color: Palette.ivoryDim)),
+            ),
+          );
+        },
       ),
       title: Text(line.title, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text('${line.qty} × ${fmtPrice(line.unitPrice)}', style: const TextStyle(color: Palette.ivoryDim, fontSize: 12)),

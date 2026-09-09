@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../app_theme.dart';
 import '../../state/session.dart';
 import '../../state/store_state.dart';
+import '../admin/admin_page.dart';
 import '../orders/orders_page.dart';
 import '../shared/widgets.dart';
 import 'about_page.dart';
@@ -77,7 +78,19 @@ class ProfilePage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user.name, style: AppText.serifStyle(19, color: Palette.ivory), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Row(
+                            children: [
+                              Flexible(child: Text(user.name, style: AppText.serifStyle(19, color: Palette.ivory), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                              if (user.isAdmin) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(color: Palette.gold, borderRadius: BorderRadius.circular(8)),
+                                  child: const Text('مدير', style: TextStyle(color: Palette.night, fontSize: 10, fontWeight: FontWeight.w800)),
+                                ),
+                              ],
+                            ],
+                          ),
                           const SizedBox(height: 3),
                           Text(user.email, style: const TextStyle(color: Palette.ivoryDim, fontSize: 12.5), maxLines: 1, overflow: TextOverflow.ellipsis),
                           if ((user.city ?? '').isNotEmpty || (user.phone ?? '').isNotEmpty) ...[
@@ -100,6 +113,22 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+            // ---------------- لوحة المدير (تظهر لحساب المدير فقط)
+            if (user.isAdmin) ...[
+              const SectionTitle(title: 'إدارة المتجر'),
+              const SizedBox(height: 6),
+              Card(
+                color: Palette.walnut.withValues(alpha: .45),
+                child: _Item(
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: 'لوحة إدارة المتجر',
+                  subtitle: 'إضافة وتعديل وحذف الكتب والتصنيفات، وإحصاءات المبيعات',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPage())),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // ---------------- الطلبات والحساب
             const SectionTitle(title: 'النشاط'),

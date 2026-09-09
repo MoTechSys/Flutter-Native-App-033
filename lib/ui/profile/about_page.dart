@@ -11,7 +11,7 @@ import '../../app_theme.dart';
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
-  static const appVersion = '1.0.0';
+  static const appVersion = '1.1.0';
   static const studentName = 'علي عبده يحيى';
 
   @override
@@ -128,6 +128,7 @@ class AboutPage extends StatelessWidget {
                   _Feature(Icons.local_shipping_outlined, 'تتبع حالة الطلب وإلغاؤه'),
                   _Feature(Icons.lock_reset, 'استعادة كلمة المرور برمز OTP في 3 خطوات'),
                   _Feature(Icons.arrow_back, 'زر الرجوع يعود خطوة بخطوة داخل كل تبويب'),
+                  _Feature(Icons.admin_panel_settings_outlined, 'حساب مدير: إضافة/تعديل/حذف الكتب والتصنيفات + إحصاءات'),
                 ],
               ),
             ),

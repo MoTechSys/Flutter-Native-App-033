@@ -326,15 +326,28 @@ class _CategoryStrip extends StatelessWidget {
   }
 }
 
-IconData categoryIcon(String slug) => switch (slug) {
-  'novel' => Icons.auto_stories_outlined,
-  'growth' => Icons.self_improvement,
-  'tech' => Icons.code,
-  'history' => Icons.account_balance_outlined,
-  'kids' => Icons.child_care,
-  'science' => Icons.science_outlined,
-  _ => Icons.book_outlined,
+/// أيقونات التصنيفات المتاحة (المفتاح = slug يُحفظ في SQLite)
+const kCategoryIcons = <String, IconData>{
+  'novel': Icons.auto_stories_outlined,
+  'growth': Icons.self_improvement,
+  'tech': Icons.code,
+  'history': Icons.account_balance_outlined,
+  'kids': Icons.child_care,
+  'science': Icons.science_outlined,
+  'religion': Icons.mosque_outlined,
+  'business': Icons.trending_up,
+  'poetry': Icons.format_quote_outlined,
+  'health': Icons.favorite_outline,
+  'art': Icons.palette_outlined,
+  'travel': Icons.public,
+  'cooking': Icons.restaurant_outlined,
+  'language': Icons.translate,
+  'philosophy': Icons.psychology_outlined,
+  'comics': Icons.emoji_emotions_outlined,
+  'book': Icons.book_outlined,
 };
+
+IconData categoryIcon(String slug) => kCategoryIcons[slug] ?? Icons.book_outlined;
 
 // ------------------------------------------------------------ Shelf (wooden)
 class _Shelf extends StatelessWidget {

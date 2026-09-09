@@ -16,6 +16,7 @@ class Session extends ChangeNotifier {
   AppUser? get user => _user;
   bool get signedIn => _user != null;
   int get uid => _user?.id ?? 0;
+  bool get isAdmin => _user?.isAdmin ?? false;
 
   Future<void> restore() async {
     final p = await SharedPreferences.getInstance();
@@ -42,8 +43,9 @@ class Session extends ChangeNotifier {
     required String password,
     String? phone,
     String? city,
+    UserRole role = UserRole.customer,
   }) async {
-    final err = await _users.register(name: name, email: email, password: password, phone: phone, city: city);
+    final err = await _users.register(name: name, email: email, password: password, phone: phone, city: city, role: role);
     if (err != null) return err;
     // دخول تلقائي بعد التسجيل مباشرة
     return signIn(email, password);

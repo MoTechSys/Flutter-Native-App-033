@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
+import '../../models/models.dart';
 import '../../state/session.dart';
 import '../shared/widgets.dart';
 
@@ -29,6 +30,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool _hide = true;
   bool _busy = false;
   bool _agree = false;
+  UserRole _role = UserRole.customer;
 
 
   Future<void> _submit() async {
@@ -44,6 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
       password: _pass.text,
       phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
       city: _city,
+      role: _role,
     );
     if (!mounted) return;
     setState(() => _busy = false);
@@ -73,7 +76,26 @@ class _SignUpPageState extends State<SignUpPage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Palette.ivoryDim, height: 1.5),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 18),
+                // ---------------- نوع الحساب
+                SegmentedButton<UserRole>(
+                  segments: const [
+                    ButtonSegment(value: UserRole.customer, icon: Icon(Icons.person_outline), label: Text('مستخدم')),
+                    ButtonSegment(value: UserRole.admin, icon: Icon(Icons.admin_panel_settings_outlined), label: Text('مدير المتجر')),
+                  ],
+                  selected: {_role},
+                  onSelectionChanged: (s) => setState(() => _role = s.first),
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    selectedBackgroundColor: Palette.gold,
+                    selectedForegroundColor: Palette.night,
+                    foregroundColor: Palette.ivory,
+                    side: const BorderSide(color: Palette.line),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(_role.hint, textAlign: TextAlign.center, style: const TextStyle(color: Palette.ivoryDim, fontSize: 12)),
+                const SizedBox(height: 18),
                 TextFormField(
                   controller: _name,
                   textCapitalization: TextCapitalization.words,

@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- الكاميرا اختيارية: لالتقاط غلاف كتاب من لوحة المدير (image_picker يطلب الإذن وقت التشغيل) -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="كِتابي"
         android:name="${applicationName}"
