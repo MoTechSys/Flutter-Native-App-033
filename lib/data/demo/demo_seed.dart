@@ -36,9 +36,10 @@ class DemoSeed {
       'id': workerId, 'shop_id': shopId, 'name': 'علي', 'role': 'worker', 'created_at': ms,
     });
 
+    // Order matches assets/images/demo/c01..c10 (row-major from the faces grid).
     final names = [
-      'أحمد صالح', 'محمد علي', 'علي حسن', 'صالح ناصر', 'عبدالله محسن',
-      'حسين عبده', 'فهد سعيد', 'أم محمد', 'يحيى قاسم', 'نبيل عوض',
+      'أحمد صالح', 'الحاج يحيى', 'محمد علي', 'أم محمد', 'فهد سعيد',
+      'صالح ناصر', 'نبيل عوض', 'الشيخ حسين', 'عبدالله محسن', 'علي حسن',
     ];
     final ids = <String>[];
     for (var i = 0; i < names.length; i++) {
@@ -47,6 +48,7 @@ class DemoSeed {
       await db.insert('customers', {
         'id': id, 'shop_id': shopId, 'name': names[i],
         'phone': '77${(1000000 + i * 137).toString().padLeft(7, '0')}',
+        'photo_path': 'asset:assets/images/demo/c${(i + 1).toString().padLeft(2, '0')}.jpg',
         'is_archived': 0, 'created_at': ms - i * 86400000, 'updated_at': ms,
       });
     }

@@ -36,11 +36,11 @@ class QuickActionCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(icon,
-                      size: 34, color: emphasized ? Colors.white : AppColors.primary),
-                  const SizedBox(height: 6),
+                      size: 36, color: emphasized ? Colors.white : AppColors.primary),
+                  const SizedBox(height: 8),
                   Text(label,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: emphasized ? Colors.white : AppColors.textPrimary,
                       )),
