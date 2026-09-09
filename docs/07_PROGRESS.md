@@ -21,6 +21,8 @@
 | **GitHub Release عام** + `CHANGELOG.md` | ✅ | https://github.com/MoTechSys/Flutter-Native-App-033/releases/tag/sijil-v0.2.0 — الروابط المباشرة + SHA-256 في `CHANGELOG.md` |
 | اختبار ميداني على هاتف (كاميرا/صوت/واتساب/PDF/نسخ/Drive) | ⏳ | قائمة الفحص في `12_RELEASE_GUIDE.md` §6 — **الخطوة التالية** |
 | تغيير `Activation.secret` قبل البيع | ⚠️ | إلزامي قبل أول زبون حقيقي |
+| تجربة استنساخ نظيف من GitHub (وكيل جديد) | ✅ | clone → pub get → analyze 0 → **93/93** — الخطوات في `13_NEW_AGENT_BOOTSTRAP.md` |
+| **آخر نسخة ProjectBackup (تحوي ملفات التوقيع)** | ✅ | https://www.genspark.ai/api/files/s/MQ7RksYw — استخراج `android/key.properties` + `android/release-key.jks` فقط عند الحاجة |
 
 **المرحلة الحالية:** 0 — الأساس (Foundation) — **مكتملة تقريباً**
 **آخر أمر ناجح:** `flutter build web --release` + معاينة على المنفذ 5060 + لقطة شاشة للرئيسية مطابقة للموك-أب.

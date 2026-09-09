@@ -1,7 +1,7 @@
 # سِجِل (Sijil) — دفتر ديون رقمي للمحلات اليمنية
 
 > **Android فقط.** أوفلاين أولاً. للمالك والعامل (حتى الأمي). حسابات دين بلا خطأ.
-> **ابدأ من هنا:** [`docs/00_START_HERE.md`](docs/00_START_HERE.md) — ثم [`docs/07_PROGRESS.md`](docs/07_PROGRESS.md) لتعرف ما تم وما بقي.
+> **ابدأ من هنا:** [`docs/00_START_HERE.md`](docs/00_START_HERE.md) → [`docs/13_NEW_AGENT_BOOTSTRAP.md`](docs/13_NEW_AGENT_BOOTSTRAP.md) (وكيل جديد: خطوات البيئة المُجرَّبة + أسلوب العميل) → [`docs/07_PROGRESS.md`](docs/07_PROGRESS.md) لتعرف ما تم وما بقي.
 
 | | |
 |---|---|
