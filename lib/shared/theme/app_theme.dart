@@ -32,8 +32,15 @@ class AppTheme {
       fontFamily: fontFamily,
       scaffoldBackgroundColor: AppColors.background,
     );
+    const fabTheme = FloatingActionButtonThemeData(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+    );
 
     return base.copyWith(
+      floatingActionButtonTheme: fabTheme,
       textTheme: base.textTheme.apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,

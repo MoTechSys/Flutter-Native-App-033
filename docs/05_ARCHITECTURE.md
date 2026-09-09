@@ -56,7 +56,12 @@ UI (features/*)  ── Provider/ChangeNotifier ──►  Repositories (data/) 
 ```
 - **LedgerService** هو الوحيد الذي يكتب في `transactions`. لا DAO ولا Repo يكتب مباشرة.
 - **Repositories** تُرجع نماذج جاهزة للعرض وتخفي SQL.
-- **Providers** (ChangeNotifier) لكل feature: `HomeProvider`, `CustomersProvider`, `NewTxProvider`… + `SessionProvider` (المستخدم الحالي + الصلاحيات) + `SettingsProvider`.
+- **Providers** الفعلية (بعد المرحلة 1): `SessionProvider` (المحل + المستخدم الحالي → `Actor`؛ لا Actor مالك مُثبَّت في الكود أبداً) و`AppServices` (يبني `LedgerService` + `CustomerRepository` + `TransactionsRepository` + `DashboardRepository` بعد معرفة `shopId`). الشاشات تستخدم `FutureBuilder`/`setState` محلياً بدل provider لكل feature — أبسط وكافٍ.
+- **`_Gate`** في `app.dart`: لا محل → Onboarding، محل بلا دخول → Login، وإلا الشاشة.
+- **`DemoSeed`** خلف `--dart-define=DEMO=true` فقط (`kDemo` في `main.dart`).
+- **عملية جديدة** (`features/transactions/new_transaction_flow.dart`): `TxDraft` + Navigator داخلي بأربع خطوات (اختيار زبون → نوع → مبلغ → تأكيد). الحفظ عبر `LedgerService.record` ثم `UndoBar` (8 ث) الذي يعكس عبر `reverse(reason: "تراجع المستخدم")` — لا حذف (R1).
+- **الأوراق النقدية** مرسومة بالكود (`widgets/banknote.dart`) لا صور — تكيّف مع أي عملة/شاشة وبلا حقوق صور.
+- **الصور** (`shared/services/photo_service.dart`): على Android تُحفظ في documents/photos/*؛ على الويب في الذاكرة (`mem:` prefix) للمعاينة فقط.
 
 ## 3. إدارة الحالة
 `provider ^6` — بسيط، كافٍ، مفهوم لأي مطوّر. لا Riverpod/Bloc (تعقيد غير مبرَّر هنا).

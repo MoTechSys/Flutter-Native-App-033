@@ -29,6 +29,10 @@ class MoneyFormat {
   static String withSymbol(Money m, {bool arabicDigits = false}) =>
       '${amount(m, arabicDigits: arabicDigits)} ${m.currency.symbol}';
 
+  /// "1,234 ريال" — full word, easier for low-literacy users than "ر.ي".
+  static String withName(Money m, {bool arabicDigits = false}) =>
+      '${amount(m, arabicDigits: arabicDigits)} ${m.currency.shortName}';
+
   static String _group(String digits) {
     final b = StringBuffer();
     for (var i = 0; i < digits.length; i++) {

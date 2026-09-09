@@ -17,6 +17,7 @@ class AppDrawer extends StatelessWidget {
   final int overdueCount;
   final bool activated;
   final String currentRoute;
+  final VoidCallback? onLogout;
 
   const AppDrawer({
     super.key,
@@ -27,6 +28,7 @@ class AppDrawer extends StatelessWidget {
     required this.overdueCount,
     required this.activated,
     required this.currentRoute,
+    this.onLogout,
   });
 
   @override
@@ -83,6 +85,12 @@ class AppDrawer extends StatelessWidget {
                             S.voiceHelp, Icons.headset_mic_outlined, AppRoutes.voiceHelp),
                         selected: false,
                       ),
+                      if (onLogout != null)
+                        _Tile(
+                          item: const _DrawerItem(S.logout, Icons.logout_rounded, ''),
+                          selected: false,
+                          onTapOverride: onLogout,
+                        ),
                     ],
                   ),
                 ),
@@ -181,7 +189,8 @@ class _DrawerItem {
 class _Tile extends StatelessWidget {
   final _DrawerItem item;
   final bool selected;
-  const _Tile({required this.item, required this.selected});
+  final VoidCallback? onTapOverride;
+  const _Tile({required this.item, required this.selected, this.onTapOverride});
 
   @override
   Widget build(BuildContext context) {
@@ -194,6 +203,10 @@ class _Tile extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           onTap: () {
             Navigator.of(context).pop();
+            if (onTapOverride != null) {
+              onTapOverride!();
+              return;
+            }
             if (!selected) {
               Navigator.of(context).pushNamedAndRemoveUntil(
                 item.route,

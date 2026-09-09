@@ -3,7 +3,7 @@
 > **يُحدَّث كل جلسة.** أعلى الملف = الحالة الآن. الأقدم في الأسفل.
 > الصيغة: ✅ منجز • 🔄 جارٍ • ⏳ لم يبدأ • ⚠️ معلَّق/يحتاج قرار
 
-## الحالة الآن (آخر تحديث: الجلسة 1 — 2026-09-09)
+## الحالة الآن (آخر تحديث: الجلسة 2 — 2026-09-09) — المرحلة 0 مكتملة، المرحلة 1 مبنية وتحتاج اختبار ميداني (D13)
 
 **المرحلة الحالية:** 0 — الأساس (Foundation) — **مكتملة تقريباً**
 **آخر أمر ناجح:** `flutter build web --release` + معاينة على المنفذ 5060 + لقطة شاشة للرئيسية مطابقة للموك-أب.
@@ -64,6 +64,41 @@
 - `Actor` يُمرَّر لكل عملية (لا حالة عامة للمستخدم داخل `core`) → قابل للاختبار.
 - Web preview يستخدم `sqflite_common_ffi_web` (نفس الكود، sql.js). Android يستخدم `sqflite`.
 
+## المرحلة 1 — ما أُنجز (الجلسة 2)
+| البند | الحالة | الملفات | لقطة |
+|---|---|---|---|
+| SessionProvider (محل + مستخدم + PIN مُملَّح SHA-256 + `actor`) | ✅ | `data/session/session_provider.dart` | — |
+| AppServices (بناء الخدمات بعد معرفة shopId) | ✅ | `data/app_services.dart` | — |
+| CustomerRepository (قائمة + أرصدة + فلاتر + ترتيب + بحث + أرشفة + audit) | ✅ + اختبارات | `data/repositories/customer_repository.dart` | — |
+| TransactionsRepository (صفحات 20 + فلاتر + بحث + نطاق زبون) | ✅ + اختبارات | `data/repositories/transactions_repository.dart` | — |
+| Onboarding (اسم المحل + اسمك + صورة + PIN اختياري) | ✅ | `features/auth/onboarding_screen.dart` | `preview_phase1/00` |
+| Login (شبكة صور المستخدمين → لوحة PIN) | ✅ (غير مُلتقَط — يحتاج مستخدمَين) | `features/auth/login_screen.dart` | — |
+| الزباين: شبكة/قائمة + شرائح + ترتيب + بحث + FAB | ✅ | `features/customers/customers_screen.dart` | `01`, `02` |
+| زبون جديد/تعديل (الصورة أكبر عنصر) | ✅ | `features/customers/add_customer_screen.dart` | — |
+| صفحة الزبون (رصيد ضخم + أخذ/دفع/واتساب/رسالة/كشف + آخر 5) | ✅ | `features/customers/customer_detail_screen.dart` | `03` |
+| عملية جديدة 4 خطوات (اختيار → نوع → أوراق/أرقام → تأكيد + TTS) | ✅ | `features/transactions/new_transaction_flow.dart`, `steps/*` | `04`–`08` |
+| شريط تراجع 8 ث (= قيد عكسي بسبب "تراجع المستخدم") | ✅ | `features/transactions/undo_bar.dart` | `09` |
+| الحركات (مطابق لموك-أب 03) + تفاصيل + عكس للمالك بسبب إجباري | ✅ | `features/transactions/transactions_screen.dart`, `tx_detail_screen.dart` | `10`–`12` |
+| تذكير واتساب/SMS (wa.me / sms: + سجل في `reminders`) | ✅ (لا يمكن اختباره على الويب) | `shared/services/reminder_service.dart` | — |
+| الرئيسية ببيانات حقيقية + تحديث بعد كل رجوع + 🔊 يقرأ الإجمالي | ✅ | `features/home/home_screen.dart` | `26_home_refreshed` |
+| DemoSeed خلف `--dart-define=DEMO=true` | ✅ | `main.dart` | — |
+| DashboardRepository test (ثغرة التدقيق #2) | ✅ | `test/data/repositories_test.dart` | — |
+| تسجيل خروج من القائمة الجانبية (يظهر عند وجود PIN أو أكثر من مستخدم) | ✅ | `shared/widgets/app_drawer.dart` | — |
+
+**اختبارات:** 79/79. **analyze:** 0. **لقطات:** `docs/design/preview_phase1/` (13 لقطة).
+
+### ما بقي من المرحلة 1
+- [ ] نسخة محلية تلقائية يومية إلى `Android/media/...` (يحتاج جهاز Android — لا يُختبر على الويب)
+- [ ] ملاحظة صوتية 🎤 للحركة (`note_voice_path` موجود في المخطط؛ الواجهة لاحقاً — يحتاج حزمة تسجيل)
+- [ ] اسم الزبون صوتياً (`voice_name_path`) — نفس السبب
+- [ ] **D13: اختبار ميداني مع 3 عمال حقيقيين** قبل إعلان اكتمال المرحلة
+- [ ] بناء APK وتجربة الكاميرا/واتساب/TTS على جهاز حقيقي
+
+### ملاحظات للجلسة التالية (محدَّثة)
+1. المعاينة: `flutter build web --release --dart-define=DEMO=true`. البناء الحقيقي بدون العلم يبدأ بشاشة التهيئة.
+2. أولوية: APK للاختبار الميداني (D13) ثم المرحلة 2 (`06_PLAN.md`): المتأخرين، التقارير، العملات، العمال، الإعدادات (D11 تسميات قابلة للتعديل)، التفعيل.
+3. الإحداثيات في `shot_p1*.py` مضبوطة على 412×900 — أعد المعايرة عند تغيير التخطيط (E11).
+
 ## سجل الجلسات
 ### الجلسة 1 — 2026-09-09
 - تحليل ملف Excel القديم للعميل (VBA + الصيغ) → `research/`.
@@ -79,3 +114,4 @@
 - تدقيق فني+تصميمي شامل مقابل البحوث (`10_AUDIT_PHASE0.md`) → مقبول + 4 تصحيحات نُفِّذت.
 - الأيقونة مُدمجة. 68/68 اختبار. `flutter analyze` صفر.
 - **المرحلة 0 مكتملة** → بدء المرحلة 1.
+- المرحلة 1: طبقة البيانات (Session/Customers/Transactions) + 9 شاشات + مسار العملية بالأوراق النقدية + تراجع + عكس + تذكير. 79 اختباراً. لقطات لكل شاشة.

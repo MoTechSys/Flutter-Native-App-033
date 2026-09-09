@@ -4,7 +4,11 @@ import 'package:provider/provider.dart';
 import '../../app_routes.dart';
 import '../../core/money/money.dart';
 import '../../core/money/money_format.dart';
+import '../../core/money/arabic_words.dart';
+import '../../data/app_services.dart';
 import '../../data/repositories/dashboard_repository.dart';
+import '../../data/session/session_provider.dart';
+import '../../shared/services/speech_service.dart';
 import '../../shared/l10n/ar_strings.dart';
 import '../../shared/theme/app_colors.dart';
 import '../../shared/widgets/app_drawer.dart';
@@ -28,31 +32,41 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _future = context.read<DashboardRepository>().load();
+    _future = context.read<AppServices>().dashboard.load();
+  }
+
+  /// Reload after any navigation away (a transaction may have been saved).
+  Future<void> _push(String route, {Object? args}) async {
+    await Navigator.pushNamed(context, route, arguments: args);
+    if (mounted) setState(() => _future = context.read<AppServices>().dashboard.load());
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionProvider>();
     return FutureBuilder<DashboardData>(
       future: _future,
       builder: (context, snap) {
         final data = snap.data;
         return Scaffold(
           drawer: AppDrawer(
-            shopName: 'بقالة الأمل',
-            userName: 'صالح أحمد',
-            userPhotoPath: 'asset:assets/images/demo/c06.jpg',
-            isOwner: true,
+            shopName: session.shop?.name ?? S.appName,
+            userName: session.user?.name ?? '',
+            userPhotoPath: session.user?.photoPath,
+            isOwner: session.isOwner,
             overdueCount: data?.overdue.length ?? 0,
             activated: false,
             currentRoute: AppRoutes.home,
+            onLogout: session.users.length > 1 || session.user?.hasPin == true
+                ? () => session.logout()
+                : null,
           ),
           body: SafeArea(
             child: snap.hasError
                 ? Center(child: Text('خطأ: ${snap.error}'))
                 : data == null
                     ? const Center(child: CircularProgressIndicator())
-                    : _Dashboard(data: data),
+                    : _Dashboard(data: data, push: _push),
           ),
         );
       },
@@ -62,7 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _Dashboard extends StatelessWidget {
   final DashboardData data;
-  const _Dashboard({required this.data});
+  final Future<void> Function(String route, {Object? args}) push;
+  const _Dashboard({required this.data, required this.push});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +86,7 @@ class _Dashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Header(),
+          _Header(data: data, push: push),
           const SizedBox(height: 12),
           Expanded(flex: 24, child: HeroCard(data: data)),
           const SizedBox(height: 12),
@@ -79,7 +94,7 @@ class _Dashboard extends StatelessWidget {
             flex: 21,
             child: Row(
               children: [
-                Expanded(child: _OverdueCard(items: data.overdue)),
+                Expanded(child: _OverdueCard(items: data.overdue, push: push)),
                 const SizedBox(width: 12),
                 Expanded(child: _TodayCard(data: data)),
               ],
@@ -94,7 +109,7 @@ class _Dashboard extends StatelessWidget {
                   child: QuickActionCard(
                     icon: Icons.people_alt_rounded,
                     label: S.customers,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.customers),
+                    onTap: () => push(AppRoutes.customers),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -103,7 +118,7 @@ class _Dashboard extends StatelessWidget {
                     icon: Icons.add_circle_rounded,
                     label: S.newTransaction,
                     emphasized: true,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.newTransaction),
+                    onTap: () => push(AppRoutes.newTransaction),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -111,7 +126,7 @@ class _Dashboard extends StatelessWidget {
                   child: QuickActionCard(
                     icon: Icons.bar_chart_rounded,
                     label: S.reports,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.reports),
+                    onTap: () => push(AppRoutes.reports),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -120,7 +135,7 @@ class _Dashboard extends StatelessWidget {
                     icon: Icons.notifications_active_rounded,
                     label: S.overdue,
                     badge: data.overdue.length,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.overdue),
+                    onTap: () => push(AppRoutes.overdue),
                   ),
                 ),
               ],
@@ -134,7 +149,7 @@ class _Dashboard extends StatelessWidget {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => Navigator.pushNamed(context, AppRoutes.transactions),
+                onTap: () => push(AppRoutes.transactions),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   child: Row(
@@ -152,7 +167,7 @@ class _Dashboard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Expanded(flex: 19, child: _RecentRow(items: data.recent)),
+          Expanded(flex: 19, child: _RecentRow(items: data.recent, push: push)),
         ],
       ),
     );
@@ -161,6 +176,9 @@ class _Dashboard extends StatelessWidget {
 
 /// ☰ right (RTL start) • title right-aligned under it • 🔊 left.
 class _Header extends StatelessWidget {
+  final DashboardData data;
+  final Future<void> Function(String route, {Object? args}) push;
+  const _Header({required this.data, required this.push});
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -179,18 +197,18 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(S.appNamePlain,
+              const Text(S.appNamePlain,
                   style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
                       height: 1.05)),
-              Text('بقالة الأمل',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.1)),
+              Text(context.watch<SessionProvider>().shop?.name ?? '',
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.1)),
             ],
           ),
         ),
@@ -201,7 +219,13 @@ class _Header extends StatelessWidget {
             shape: const CircleBorder(),
             child: InkWell(
               customBorder: const CircleBorder(),
-              onTap: () {},
+              onTap: () {
+                final t = data.primaryTotal;
+                context.read<SpeechService>().speak(t.isZero
+                    ? 'لا ديون عند الناس'
+                    : 'لك عند الناس ${ArabicWords.money(t)}. المتأخرون ${data.overdue.length}');
+              },
+              onLongPress: () => context.read<SpeechService>().speak(S.owedToYou),
               child: const Padding(
                 padding: EdgeInsets.all(10),
                 child: Icon(Icons.volume_up_rounded, size: 24, color: AppColors.primary),
@@ -216,7 +240,8 @@ class _Header extends StatelessWidget {
 
 class _OverdueCard extends StatelessWidget {
   final List<OverdueItem> items;
-  const _OverdueCard({required this.items});
+  final Future<void> Function(String route, {Object? args}) push;
+  const _OverdueCard({required this.items, required this.push});
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +251,7 @@ class _OverdueCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => Navigator.pushNamed(context, AppRoutes.overdue),
+        onTap: () => push(AppRoutes.overdue),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
           child: Column(
@@ -330,7 +355,8 @@ class _TodayCard extends StatelessWidget {
 /// width; more items scroll horizontally. Tap = new tx for that customer.
 class _RecentRow extends StatelessWidget {
   final List<RecentItem> items;
-  const _RecentRow({required this.items});
+  final Future<void> Function(String route, {Object? args}) push;
+  const _RecentRow({required this.items, required this.push});
 
   @override
   Widget build(BuildContext context) {
@@ -358,8 +384,8 @@ class _RecentRow extends StatelessWidget {
             final debt = !it.tx.signedEffect.isNegative;
             return InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.pushNamed(context, AppRoutes.newTransaction,
-                  arguments: it.tx.customerId),
+              onTap: () => push(AppRoutes.newTransaction, args: it.tx.customerId),
+              onLongPress: () => push(AppRoutes.customerDetail, args: it.tx.customerId),
               child: SizedBox(
                 width: itemW,
                 child: Column(

@@ -5,6 +5,9 @@
 class Currency {
   final String code;
   final String nameAr;
+
+  /// First word of the Arabic name ("ريال", "دولار") for compact display.
+  String get shortName => nameAr.split(' ').first;
   final String symbol;
   final int minorUnits;
 

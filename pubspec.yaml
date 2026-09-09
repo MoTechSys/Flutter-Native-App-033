@@ -60,6 +60,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/images/demo/
+    - assets/icon/
   fonts:
     - family: Tajawal
       fonts:

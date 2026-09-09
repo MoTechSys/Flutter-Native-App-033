@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../services/photo_service.dart';
+
 /// Round customer photo. Supports bundled assets (`asset:` prefix, used by
 /// demo data) and device files. Falls back to a colored initial when there is
 /// no photo (docs/03_DESIGN.md — "photo optional, avatar generated").
@@ -58,6 +60,9 @@ class CustomerAvatar extends StatelessWidget {
     ImageProvider? provider;
     if (p.startsWith(assetPrefix)) {
       provider = AssetImage(p.substring(assetPrefix.length));
+    } else if (p.startsWith(PhotoService.memPrefix)) {
+      final bytes = PhotoService.memoryStore[p];
+      if (bytes != null) provider = MemoryImage(bytes);
     } else if (!kIsWeb && File(p).existsSync()) {
       provider = FileImage(File(p));
     }

@@ -47,7 +47,9 @@ flutter pub get
 flutter analyze
 flutter test                          # كل الاختبارات
 flutter test test/ledger              # اختبارات المحاسبة فقط
-flutter build web --release           # معاينة
+flutter build web --release           # بناء حقيقي (يبدأ بشاشة التهيئة — بلا بيانات)
+flutter build web --release --dart-define=DEMO=true   # معاينة ببيانات تجريبية (بقالة الأمل)
+python3 docs/research/shot_p1b.py     # لقطات المسار الكامل عبر رابط المعاينة (عدّل URL أولاً)
 ```
 
 ## اللغة
