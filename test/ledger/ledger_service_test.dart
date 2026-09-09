@@ -466,6 +466,21 @@ void main() {
   });
 
   group('recent()', () {
+    test('liveOnly excludes reversed pairs and still fills the page (audit #5)', () async {
+      for (var i = 0; i < 6; i++) {
+        final tx = await env.ledger.record(debit(100 + i), worker);
+        env.clock.advance(const Duration(minutes: 1));
+        if (i.isEven) await env.ledger.reverse(tx.id, owner, reason: 'r');
+        env.clock.advance(const Duration(minutes: 1));
+      }
+      final all = await env.ledger.recent(limit: 3);
+      final live = await env.ledger.recent(limit: 3, liveOnly: true);
+      expect(all.length, 3);
+      expect(live.length, 3);
+      expect(live.every((t) => !t.isReversed && !t.isReversal), true);
+      expect(live.map((t) => t.amount.minor).toList(), [105, 103, 101]);
+    });
+
     test('ordered newest first and paged', () async {
       for (var i = 0; i < 5; i++) {
         await env.ledger.record(debit(i + 1), worker);

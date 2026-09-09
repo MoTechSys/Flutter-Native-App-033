@@ -166,12 +166,16 @@ class _Header extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Scaffold.of(context).openDrawer(),
-          child: const Padding(
-            padding: EdgeInsets.all(8),
-            child: Icon(Icons.menu_rounded, size: 30, color: AppColors.textPrimary),
+        // 56dp touch target (docs/03 §4)
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => Scaffold.of(context).openDrawer(),
+            child: const Center(
+              child: Icon(Icons.menu_rounded, size: 30, color: AppColors.textPrimary),
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -369,13 +373,25 @@ class _RecentRow extends StatelessWidget {
                         color: debt ? AppColors.debtContainer : AppColors.paymentContainer,
                         borderRadius: BorderRadius.circular(999),
                       ),
-                      child: Text(
-                        MoneyFormat.amount(it.tx.amount),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: debt ? AppColors.debt : AppColors.payment,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Not colour-only: arrow + sign (docs/03 §2)
+                          Icon(
+                            debt ? Icons.south_east_rounded : Icons.north_east_rounded,
+                            size: 12,
+                            color: debt ? AppColors.debt : AppColors.payment,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            MoneyFormat.amount(it.tx.amount),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: debt ? AppColors.debt : AppColors.payment,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

@@ -327,14 +327,29 @@ class LedgerService {
     );
   }
 
-  /// Recent live transactions (for the home row / lists). Paged.
-  Future<List<LedgerTx>> recent({int limit = 20, int offset = 0, String? customerId}) async {
-    final where = customerId == null ? '' : 'WHERE customer_id = ?';
+  /// Recent transactions (for the home row / lists). Paged.
+  /// `liveOnly` excludes reversed originals and reversal entries in SQL so a
+  /// page of N always yields N live rows (audit gap #5).
+  Future<List<LedgerTx>> recent({
+    int limit = 20,
+    int offset = 0,
+    String? customerId,
+    bool liveOnly = false,
+  }) async {
+    final conds = <String>[];
+    final args = <Object?>[];
+    if (customerId != null) {
+      conds.add('customer_id = ?');
+      args.add(customerId);
+    }
+    if (liveOnly) conds.add('reversed_by_id IS NULL AND reverses_id IS NULL');
+    final where = conds.isEmpty ? '' : 'WHERE ${conds.join(' AND ')}';
+    args.addAll([limit, offset]);
     final rows = await _db.rawQuery('''
       SELECT * FROM transactions $where
       ORDER BY occurred_at DESC, recorded_at DESC, rowid DESC
       LIMIT ? OFFSET ?
-    ''', customerId == null ? [limit, offset] : [customerId, limit, offset]);
+    ''', args);
     return rows.map(LedgerTx.fromRow).toList();
   }
 

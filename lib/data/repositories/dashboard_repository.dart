@@ -42,10 +42,9 @@ class DashboardRepository {
       ORDER BY b.balance_minor DESC
     ''', [primary.code, cutoff]);
 
-    final recentTx = await _ledger.recent(limit: 15);
+    final recentTx = await _ledger.recent(limit: 15, liveOnly: true);
     final recent = <RecentItem>[];
     for (final tx in recentTx) {
-      if (tx.isReversal || tx.isReversed) continue;
       final c = await _db.query('customers',
           columns: ['name', 'photo_path'], where: 'id=?', whereArgs: [tx.customerId]);
       recent.add(RecentItem(
