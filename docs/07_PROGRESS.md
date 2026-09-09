@@ -9,7 +9,7 @@
 **آخر أمر ناجح:** `flutter build web --release` + معاينة على المنفذ 5060 + لقطة شاشة للرئيسية مطابقة للموك-أب.
 **الاختبارات:** `flutter test test/ledger` → **67/67 ناجح** (بعد إصلاح E5).
 **`flutter analyze`:** 0 مشاكل.
-**Git:** ✅ commit `ce26ed8` — "Phase 0: foundation, ledger engine (67 tests), full docs, home dashboard". شجرة العمل نظيفة.
+**Git:** ✅ آخر commit `b13cf69` (الرئيسية مطابقة للتصميم) — قبله `c4cb018`, `ce26ed8` — "Phase 0: foundation, ledger engine (67 tests), full docs, home dashboard". شجرة العمل نظيفة.
 
 ### ما أُنجز في المرحلة 0
 | البند | الحالة | الملفات |
@@ -24,7 +24,7 @@
 | اختبارات: 14 money + 53 ledger = 67 تغطي R1–R10 والحالات #1–#17,#19 جزئياً | ✅ | `test/ledger/` |
 | Theme (ألوان WCAG، Tajawal، 56dp) | ✅ | `lib/shared/theme/` |
 | AppDrawer (9 بنود + إخفاء للعامل + شارات) | ✅ | `lib/shared/widgets/app_drawer.dart` |
-| HomeScreen مطابق لـ `01_home_final.png` بلا تمرير + صف أفقي للحركات | ✅ | `lib/features/home/` |
+| HomeScreen مطابق لـ `01_home_final.png` بلا تمرير + صف أفقي للحركات — **مُدقَّق بصرياً** (`design/preview_home_phase0.png`) | ✅ | `lib/features/home/` |
 | DashboardRepository (إجمالي، اليوم، متأخرين، آخر الحركات) | ✅ | `lib/data/repositories/` |
 | DemoSeed (10 زباين، 21 حركة) للمعاينة فقط | ✅ | `lib/data/demo/` |
 | Routes + ComingSoon لكل مسار غير مبني | ✅ | `lib/app.dart`, `lib/app_routes.dart` |
@@ -33,8 +33,8 @@
 ### ما بقي من المرحلة 0
 - [x] Git commit أولي ✅ `ce26ed8`
 - [ ] أيقونة التطبيق (توليد + `integrate_app_icon.py`)
-- [ ] لقطة القائمة الجانبية (النقر كان على الجهة الخطأ — في RTL زر ☰ يمين: `x≈680` على عرض 720)
-- [ ] تحسين صغير: تراكب صور المتأخرين (عُدِّل في الكود، يحتاج إعادة بناء للتحقق)
+- [x] لقطة القائمة الجانبية ✅ `design/preview_drawer_phase0.png`
+- [x] تراكب صور المتأخرين ✅
 - [ ] اختبار `verifyIntegrity()` بعد استيراد من جهاز ثانٍ (حالة #9 بعمق أكبر)
 
 ### ملاحظات للجلسة التالية
@@ -43,6 +43,9 @@
 3. بعدها ابدأ **المرحلة 1** من `06_PLAN.md` بالترتيب: دخول المستخدم → الزباين → عملية جديدة (4 خطوات) → الحركات.
 4. عند بناء الزباين/الحركات: استبدل `DemoSeed` بـ onboarding حقيقي، لكن أبقِ DemoSeed خلف علم `--dart-define=DEMO=true` للمعاينة.
 5. `sqflite_common_ffi_web:setup` أنشأ `web/sqflite_sw.js` و`web/sqlite3.wasm` — **لا تحذفهما** (المعاينة تعتمد عليهما).
+
+### قاعدة عمل جديدة (بعد E6)
+**كل شاشة تُسلَّم مع لقطة فعلية (`shot.py`) مقارنة بالموك-أب عنصراً عنصراً.** بدون ذلك الشاشة غير مكتملة.
 
 ### قرارات تقنية اتُّخذت أثناء التنفيذ (مضافة للتوثيق)
 - ترتيب الحركات بـ `rowid` لا `id` (E5).
