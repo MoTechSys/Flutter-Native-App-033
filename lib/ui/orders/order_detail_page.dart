@@ -161,7 +161,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     child: OutlinedButton.icon(
                       onPressed: delivered || _busy ? null : _cancel,
                       icon: const Icon(Icons.cancel_outlined, color: Palette.danger),
-                      label: const Text('إلغاء الطلب', style: TextStyle(color: Palette.danger)),
+                      label: const Text('إلغاء', style: TextStyle(color: Palette.danger)),
                     ),
                   ),
                   const SizedBox(width: 10),
