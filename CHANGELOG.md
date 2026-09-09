@@ -28,7 +28,7 @@
 - armeabi-v7a: `f8bb055befe57fccbd9c622ccf4cb3fe8f5c69a59d0674ebac57f058cd9fc32f`
 
 **Git:** commit `998769f` — وسم `sijil-v0.2.0` — فرع `main`.
-**التوقيع:** release key، شهادة SHA-256 تبدأ بـ `9a366b2e` (CN=Flutter App, O=GenSpark). الملفات خارج Git، موجودة في نسخة ProjectBackup.
+**التوقيع:** release key، شهادة SHA-256 تبدأ بـ `9a366b2e` (CN=Flutter App, O=GenSpark). الملفات **داخل المستودع** (`android/key.properties` + `android/release-key.jks`، قرار D17 — المستودع يجب أن يكون خاصاً).
 **البيئة:** Flutter 3.35.4 / Dart 3.9.2 / minSdk 21 / targetSdk 36 / package `com.sijildebt.ledger`.
 **الاختبارات:** 93 ناجحة، `flutter analyze` صفر.
 **الحالة:** مبني ومُختبَر على معاينة الويب فقط — **يلزم اختبار ميداني على هاتف** (`docs/12_RELEASE_GUIDE.md §6`).
