@@ -1,0 +1,70 @@
+name: sijil
+description: "سِجِل — دفتر ديون رقمي للمحلات اليمنية، يعمل بدون إنترنت، مصمَّم ليستخدمه الأمي والمتعلّم."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # --- State ---
+  provider: ^6.1.5
+
+  # --- Storage (offline-first) ---
+  sqflite: ^2.4.1            # SQLite on Android
+  sqflite_common: ^2.5.4     # shared API (Database, DatabaseFactory)
+  sqflite_common_ffi_web: ^0.4.5   # SQLite on Web (preview/testing)
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  shared_preferences: ^2.5.3
+  uuid: ^4.5.1
+  crypto: ^3.0.6
+
+  # --- Documents (A4 PDF) ---
+  pdf: ^3.11.3
+  printing: ^5.13.4
+
+  # --- Sharing / Messaging ---
+  share_plus: ^10.1.4
+  url_launcher: ^6.3.1
+
+  # --- Voice ---
+  flutter_tts: ^4.2.0
+
+  # --- Media ---
+  image_picker: ^1.1.2
+
+  # --- Cloud backup (Google Drive appDataFolder) ---
+  google_sign_in: ^6.2.2
+  googleapis: ^13.2.0
+  extension_google_sign_in_as_googleapis_auth: ^2.0.12
+
+  # --- Misc ---
+  intl: ^0.20.2
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  sqflite_common_ffi: ^2.3.4   # SQLite for unit tests on desktop/CI
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/fonts/
+    - assets/images/
+  fonts:
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf

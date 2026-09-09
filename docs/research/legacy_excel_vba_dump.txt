@@ -1,0 +1,2191 @@
+olevba 0.60.2 on Python 3.13.13 - http://decalage.info/python/oletools
+===============================================================================
+FILE: gen.xlsm
+Type: OpenXML
+WARNING  For now, VBA stomping cannot be detected for files in memory
+-------------------------------------------------------------------------------
+VBA MACRO ThisWorkbook.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/ThisWorkbook'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO SheetSolar1.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/SheetSolar1'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO Module2.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module2'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Sub Macro3()
+Attribute Macro3.VB_ProcData.VB_Invoke_Func = "R\n14"
+FormOne.Show
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO الصيانه.cls 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/الصيانه'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+(empty macro)
+-------------------------------------------------------------------------------
+VBA MACRO CalendarForm.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+' في UserForm "CalendarForm"
+Public selectedDate As Date
+
+Private Sub UserForm_Initialize()
+    ' تهيئة الشهور
+    cboMonth.List = Array("يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", _
+                          "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر")
+    cboMonth.ListIndex = Month(Date) - 1  ' الشهر الحالي
+    
+    ' تهيئة السنوات (من 2020 إلى 2030)
+    For Y = 2020 To 2030
+        cboYear.AddItem Y
+    Next Y
+    cboYear.Text = Year(Date)  ' السنة الحالية
+    
+    ' تحديث التقويم
+    Call UpdateCalendar
+End Sub
+
+Private Sub UpdateCalendar()
+    lstDays.Clear
+    
+    Dim selectedMonth As Integer
+    Dim selectedYear As Integer
+    selectedMonth = cboMonth.ListIndex + 1
+    selectedYear = Val(cboYear.Text)
+    
+    ' تحديد عدد أيام الشهر
+    Dim daysInMonth As Integer
+    daysInMonth = Day(DateSerial(selectedYear, selectedMonth + 1, 0))
+    
+    ' تعبئة ListBox بالأيام
+    For i = 1 To daysInMonth
+        lstDays.AddItem i
+    Next i
+End Sub
+
+Private Sub cboMonth_Change()
+    Call UpdateCalendar
+End Sub
+
+Private Sub cboYear_Change()
+    Call UpdateCalendar
+End Sub
+
+Private Sub cmdOK_Click()
+    If lstDays.ListIndex = -1 Then
+        MsgBox "الرجاء اختيار يوم", vbExclamation
+        Exit Sub
+    End If
+    
+    Dim selectedDay As Integer
+    selectedDay = lstDays.List(lstDays.ListIndex)
+    
+    Dim selectedMonth As Integer
+    selectedMonth = cboMonth.ListIndex + 1
+    
+    Dim selectedYear As Integer
+    selectedYear = Val(cboYear.Text)
+    
+    selectedDate = DateSerial(selectedYear, selectedMonth, selectedDay)
+    
+    ' إخفاء النموذج
+    Me.Hide
+End Sub
+
+Private Sub lstDays_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    ' اختيار التاريخ بنقرة مزدوجة
+    cmdOK_Click
+End Sub
+
+-------------------------------------------------------------------------------
+VBA MACRO Module1.bas 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/Module1'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Option Explicit
+
+#If VBA7 Then
+    ' 64-bit Excel
+    Private Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As LongPtr
+    Private Declare PtrSafe Function GetWindowLongPtr Lib "user32" Alias "GetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As LongPtr
+    Private Declare PtrSafe Function SetWindowLongPtr Lib "user32" Alias "SetWindowLongPtrA" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As LongPtr) As LongPtr
+    Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As Long) As Long
+#Else
+    ' 32-bit Excel
+    Private Declare Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As Long
+    Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long) As Long
+    Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+    Private Declare Function ShowWindow Lib "user32" (ByVal hWnd As Long, ByVal nCmdShow As Long) As Long
+#End If
+
+Private Const GWL_STYLE = (-16)
+Private Const WS_MINIMIZEBOX = &H20000
+Private Const WS_MAXIMIZEBOX = &H10000
+Private Const SW_MAXIMIZE = 3
+
+' إضافة زر التكبير إلى شريط العنوان
+Public Sub AddMaximizeButton(ByVal UserForm As Object)
+    Dim hWnd As LongPtr, lStyle As LongPtr
+    hWnd = FindWindow("ThunderDFrame", UserForm.Caption)
+    lStyle = GetWindowLongPtr(hWnd, GWL_STYLE)
+    lStyle = lStyle Or WS_MAXIMIZEBOX
+    Call SetWindowLongPtr(hWnd, GWL_STYLE, lStyle)
+End Sub
+
+' إضافة زر التصغير إلى شريط العنوان
+Public Sub AddMinimizeButton(ByVal UserForm As Object)
+    Dim hWnd As LongPtr, lStyle As LongPtr
+    hWnd = FindWindow("ThunderDFrame", UserForm.Caption)
+    lStyle = GetWindowLongPtr(hWnd, GWL_STYLE)
+    lStyle = lStyle Or WS_MINIMIZEBOX
+    Call SetWindowLongPtr(hWnd, GWL_STYLE, lStyle)
+End Sub
+
+' تكبير النافذة عند البدء
+Public Sub MaximizeForm(ByVal UserForm As Object)
+    Dim hWnd As LongPtr
+    hWnd = FindWindow("ThunderDFrame", UserForm.Caption)
+    ShowWindow hWnd, SW_MAXIMIZE
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO DieselForm.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Private Sub cmdSearch_Click()
+    ' التحقق من إدخال التاريخ
+    If txtDate.Text = "" Then
+        MsgBox "الرجاء اختيار التاريخ أولاً", vbExclamation
+        Exit Sub
+    End If
+    
+    Dim selectedDate As Date
+    On Error Resume Next ' إضافة معالجة الأخطاء
+    selectedDate = CDate(txtDate.Text)
+    If Err.Number <> 0 Then
+        MsgBox "تنسيق التاريخ غير صحيح", vbExclamation
+        Exit Sub
+    End If
+    On Error GoTo 0
+    
+    ' تفريغ الحقول قبل البحث
+    txtQuantity.Text = ""
+    txtDocumentNumber.Text = ""
+    txtDetails.Text = ""
+    
+    ' البحث في ورقة "المولدات"
+    Dim wsGenerators As Worksheet
+    Set wsGenerators = ThisWorkbook.Sheets("المولدات")
+    
+    Dim foundInGenerators As Boolean
+    foundInGenerators = False
+    Dim generatorRow As Long
+    
+    Dim lastRowGenerators As Long
+    lastRowGenerators = wsGenerators.Cells(wsGenerators.Rows.Count, "C").End(xlUp).Row
+    
+    ' البحث عن التاريخ في المولدات - التصحيح هنا
+    Dim i As Long
+    For i = 2 To lastRowGenerators
+        If IsDate(wsGenerators.Cells(i, "C").Value) Then
+            ' استخدم DateValue لمقارنة التواريخ فقط بدون الوقت
+            If DateValue(wsGenerators.Cells(i, "C").Value) = DateValue(selectedDate) Then
+                foundInGenerators = True
+                generatorRow = i
+                
+                ' عرض الكمية إذا كانت موجودة
+                If wsGenerators.Cells(i, "S").Value <> "" Then
+                    txtQuantity.Text = wsGenerators.Cells(i, "S").Value
+                End If
+                Exit For
+            End If
+        End If
+    Next i
+    
+    ' البحث في ورقة "المنظومه" - التصحيح هنا
+    Dim wsSystem As Worksheet
+    Set wsSystem = ThisWorkbook.Sheets("المنظومه")
+    
+    Dim foundInSystem As Boolean
+    foundInSystem = False
+    Dim systemRow As Long
+    
+    Dim lastRowSystem As Long
+    lastRowSystem = wsSystem.Cells(wsSystem.Rows.Count, "B").End(xlUp).Row
+    
+    ' البحث عن التاريخ في المنظومه - التصحيح هنا
+    Dim j As Long
+    For j = 2 To lastRowSystem
+        If IsDate(wsSystem.Cells(j, "B").Value) Then
+            ' استخدم DateValue لمقارنة التواريخ فقط بدون الوقت
+            If DateValue(wsSystem.Cells(j, "B").Value) = DateValue(selectedDate) Then
+                foundInSystem = True
+                systemRow = j
+                
+                ' عرض رقم السند إذا كان موجوداً - التصحيح هنا
+                txtDocumentNumber.Text = wsSystem.Cells(j, "J").Value & ""
+                
+                ' عرض التفاصيل إذا كانت موجودة - التصحيح هنا
+                txtDetails.Text = wsSystem.Cells(j, "K").Value & ""
+                Exit For
+            End If
+        End If
+    Next j
+    
+    ' إدارة أزرار الحفظ والتعديل
+    Dim hasData As Boolean
+    hasData = (txtQuantity.Text <> "" Or txtDocumentNumber.Text <> "" Or txtDetails.Text <> "")
+    
+    ' إذا وجدنا التاريخ ولكن بدون بيانات
+    If (foundInGenerators Or foundInSystem) And Not hasData Then
+        SaveData.Visible = True
+        cmdEdit.Visible = False
+        MsgBox "الرجاء ادخال الكميه الجديده ", vbInformation
+    ' إذا وجدنا التاريخ وبها بيانات
+    ElseIf hasData Then
+        SaveData.Visible = False
+        cmdEdit.Visible = True
+        MsgBox "تم العثور على كميه بهاذا التاريخ وعرضها", vbInformation
+    ' إذا لم نجد التاريخ
+    Else
+        SaveData.Visible = True
+        cmdEdit.Visible = False
+        MsgBox "هذا التاريخ ليس في سنة 2025 ", vbExclamation
+    End If
+End Sub
+
+Private Sub cmdEdit_Click()
+    ' التحقق من البيانات المدخلة
+    If Not IsNumeric(txtQuantity.Text) And txtQuantity.Text <> "" Then
+        MsgBox "الرجاء إدخال كمية صحيحة", vbExclamation
+        Exit Sub
+    End If
+    
+    Dim selectedDate As Date
+    selectedDate = CDate(txtDate.Text)
+    
+    ' تحديث ورقة "المولدات"
+    Dim wsGenerators As Worksheet
+    Set wsGenerators = ThisWorkbook.Sheets("المولدات")
+    
+    Dim lastRowGenerators As Long
+    lastRowGenerators = wsGenerators.Cells(wsGenerators.Rows.Count, "C").End(xlUp).Row
+    
+    ' البحث عن التاريخ في المولدات
+    For i = 2 To lastRowGenerators
+        If IsDate(wsGenerators.Cells(i, "C").Value) Then
+            If CDate(wsGenerators.Cells(i, "C").Value) = selectedDate Then
+                ' تحديث الكمية إذا تم إدخالها
+                If txtQuantity.Text <> "" Then
+                    wsGenerators.Cells(i, "S").Value = txtQuantity.Text
+                End If
+                Exit For
+            End If
+        End If
+    Next i
+    
+    ' تحديث ورقة "المنظومه"
+    Dim wsSystem As Worksheet
+    Set wsSystem = ThisWorkbook.Sheets("المنظومه")
+    
+    Dim lastRowSystem As Long
+    lastRowSystem = wsSystem.Cells(wsSystem.Rows.Count, "A").End(xlUp).Row
+    
+    ' البحث عن التاريخ في المنظومه
+    For j = 2 To lastRowSystem
+       If IsDate(wsSystem.Cells(j, "B").Value) Then
+    If CDate(wsSystem.Cells(j, "B").Value) = selectedDate Then
+
+                ' تحديث رقم السند إذا تم إدخاله
+                If txtDocumentNumber.Text <> "" Then
+                    wsSystem.Cells(j, "J").Value = txtDocumentNumber.Text
+                End If
+                
+                ' تحديث التفاصيل إذا تم إدخالها
+                If txtDetails.Text <> "" Then
+                    wsSystem.Cells(j, "K").Value = txtDetails.Text
+                End If
+                Exit For
+            End If
+        End If
+    Next j
+    
+    MsgBox "تم تحديث البيانات بنجاح", vbInformation
+    
+    ' تفريغ الحقول بعد التحديث
+    txtDate.Text = ""
+    txtQuantity.Text = ""
+    txtDocumentNumber.Text = ""
+    txtDetails.Text = ""
+    
+    ' إعادة تعيين أزرار الحفظ والتعديل
+    SaveData.Visible = True
+    cmdEdit.Visible = False
+End Sub
+
+
+
+
+Private Sub SaveData_Click()
+    ' التحقق من البيانات المدخلة
+    If txtDate.Text = "" Then
+        MsgBox "الرجاء اختيار التاريخ", vbExclamation
+        Exit Sub
+    End If
+    
+    If Not IsNumeric(txtQuantity.Text) Then
+        MsgBox "الرجاء إدخال كمية صحيحة", vbExclamation
+        Exit Sub
+    End If
+    
+    If txtDocumentNumber.Text = "" Then
+        MsgBox "الرجاء إدخال رقم السند", vbExclamation
+        Exit Sub
+    End If
+    
+    If txtDetails.Text = "" Then
+        MsgBox "الرجاء إدخال تفاصيل الخطة", vbExclamation
+        Exit Sub
+    End If
+    
+    Dim selectedDate As Date
+    selectedDate = CDate(txtDate.Text)
+    
+    ' العمل على ورقة "المولدات"
+    Dim wsGenerators As Worksheet
+    Set wsGenerators = ThisWorkbook.Sheets("المولدات")
+    
+    Dim foundInGenerators As Boolean
+    foundInGenerators = False
+    
+    Dim lastRowGenerators As Long
+    lastRowGenerators = wsGenerators.Cells(wsGenerators.Rows.Count, "C").End(xlUp).Row
+    
+    ' البحث في ورقة المولدات وإضافة الكمية
+    For i = 2 To lastRowGenerators
+        If IsDate(wsGenerators.Cells(i, "C").Value) Then
+            If CDate(wsGenerators.Cells(i, "C").Value) = selectedDate Then
+                foundInGenerators = True
+                ' إضافة الكمية في العمود S
+                wsGenerators.Cells(i, "S").Value = wsGenerators.Cells(i, "S").Value + Val(txtQuantity.Text)
+                Exit For
+            End If
+        End If
+    Next i
+    
+    ' العمل على ورقة "المنظومه"
+    Dim wsSystem As Worksheet
+    Set wsSystem = ThisWorkbook.Sheets("المنظومه")
+    
+    Dim lastRowSystem As Long
+    lastRowSystem = wsSystem.Cells(wsSystem.Rows.Count, "A").End(xlUp).Row
+    
+    Dim foundInSystem As Boolean
+    foundInSystem = False
+    
+    ' البحث في ورقة المنظومة عن التاريخ
+    For j = 2 To lastRowSystem
+        If IsDate(wsSystem.Cells(j, "B").Value) Then
+            If CDate(wsSystem.Cells(j, "B").Value) = selectedDate Then
+                foundInSystem = True
+                ' إذا وجدنا التاريخ، نضع رقم السند في العمود J وتفاصيل الخطة في العمود K
+                wsSystem.Cells(j, "J").Value = txtDocumentNumber.Text
+                wsSystem.Cells(j, "K").Value = txtDetails.Text
+                Exit For
+            End If
+        End If
+    Next j
+    
+    ' إذا لم نجد التاريخ في ورقة المنظومة، نضيف سطرًا جديدًا
+    If Not foundInSystem Then
+        ' نجد الصف الفارغ التالي
+        Dim newRow As Long
+        newRow = lastRowSystem + 1
+        
+        ' نملأ البيانات
+        wsSystem.Cells(newRow, "A").Value = selectedDate ' التاريخ في العمود A
+        wsSystem.Cells(newRow, "J").Value = txtDocumentNumber.Text ' رقم السند في العمود J
+        wsSystem.Cells(newRow, "K").Value = txtDetails.Text ' التفاصيل في العمود K
+    End If
+    
+    MsgBox "تم حفظ البيانات بنجاح", vbInformation
+    
+    ' تفريغ الحقول بعد الحفظ
+    txtDate.Text = ""
+    txtQuantity.Text = ""
+    txtDocumentNumber.Text = ""
+    txtDetails.Text = ""
+    
+    ' إعادة تعيين أزرار الحفظ والتعديل
+    SaveData.Visible = True
+    cmdEdit.Visible = False
+End Sub
+
+
+
+Private Sub UserForm_Activate()
+Me.Frame1.Left = (Me.Width / 2) - (Me.Frame1.Width / 2)
+End Sub
+
+Private Sub UserForm_Initialize()
+    ' تهيئة الحقول
+    txtDate.Text = ""
+    txtQuantity.Text = ""
+    txtDocumentNumber.Text = ""
+    txtDetails.Text = ""
+    
+    ' إظهار زر الحفظ وإخفاء زر التعديل
+    SaveData.Visible = True
+    cmdEdit.Visible = False
+
+   
+
+End Sub
+
+Private Sub cmdChooseDate_Click()
+    CalendarForm.Show
+    ' بعد اختيار التاريخ من CalendarForm
+    If CalendarForm.selectedDate <> 0 Then
+        txtDate.Text = Format(CalendarForm.selectedDate, "dd/mm/yyyy")
+    End If
+End Sub
+
+
+
+Private Sub cmdClose_Click()
+    ' إغلاق النموذج
+    Unload Me
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO EditeForm.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+' في UserForm
+Private OriginalLeft() As Single
+Private OriginalTop() As Single
+Private ControlNames() As String
+
+Private currentRow As Long
+Private selectedDate As Date
+
+
+
+Private Sub UserForm_Activate()
+Me.btnSearch.Left = (Me.Width / 2) - (Me.btnSearch.Width / 2)
+End Sub
+
+Private Sub UserForm_Initialize()
+    txtDate.Value = Format(Date, "dd/mm/yyyy") ' تعيين التاريخ الحالي
+    currentRow = 0 ' إعادة تعيين الصف الحالي
+    
+        Application.WindowState = xlMaximized
+        AddMaximizeButton Me
+        AddMinimizeButton Me
+      
+    ' حفظ المواقع الأصلية
+    Dim ctrlCount As Integer
+    ctrlCount = Me.Controls.Count
+    ReDim OriginalLeft(ctrlCount - 1)
+    ReDim OriginalTop(ctrlCount - 1)
+    ReDim ControlNames(ctrlCount - 1)
+    
+    Dim i As Integer
+    i = 0
+    For Each ctrl In Me.Controls
+        ControlNames(i) = ctrl.Name
+        OriginalLeft(i) = ctrl.Left
+        OriginalTop(i) = ctrl.Top
+        i = i + 1
+    Next ctrl
+
+
+End Sub
+
+Private Sub btnDatePicker_Click()
+    ' عرض نموذج التقويم
+    CalendarForm.Show
+    
+    ' بعد إغلاق التقويم، تعيين التاريخ المختار
+    If CalendarForm.selectedDate <> 0 Then
+        selectedDate = CalendarForm.selectedDate
+        txtDate.Value = Format(selectedDate, "dd/mm/yyyy")
+    End If
+    
+    ' إعادة تهيئة التقويم
+    CalendarForm.selectedDate = 0
+End Sub
+
+Private Sub btnSearch_Click()
+    ' البحث عن التاريخ في الورقة
+    Dim searchDate As String
+    Dim ws As Worksheet
+    Dim LastRow As Long
+    Dim i As Long
+    
+    Set ws = SheetCAT ' استخدم اسم الورقة الفعلي
+    searchDate = txtDate.Value
+    
+    If searchDate = "" Then
+        MsgBox "الرجاء اختيار تاريخ للبحث", vbExclamation
+        Exit Sub
+    End If
+    
+    LastRow = ws.Cells(ws.Rows.Count, "C").End(xlUp).Row
+    currentRow = 0
+    
+    ' البحث في العمود A عن التاريخ المحدد
+    For i = 2 To LastRow
+        If CStr(Format(ws.Cells(i, "C").Value, "dd/mm/yyyy")) = searchDate Then
+            currentRow = i
+            Exit For
+        End If
+    Next i
+    
+    If currentRow > 0 Then
+        ' تعبئة البيانات من الصف الموجود
+        FillFormData currentRow
+        MsgBox "تم العثور على البيانات", vbInformation
+        
+    Else
+        MsgBox "لم يتم العثور على بيانات لهذا التاريخ", vbExclamation
+        ClearFormFields
+    End If
+End Sub
+
+Private Sub FillFormData(rowNum As Long)
+    ' تعبئة الحقول بالبيانات من الصف المحدد
+    Dim ws As Worksheet
+    Set ws = SheetCAT
+    
+    ' تعبئة بيانات C18
+    Me.txtID.Value = ws.Cells(rowNum, "A").Value
+    diesel18.Value = ws.Cells(rowNum, "D").Value
+    readNew18.Value = ws.Cells(rowNum, "G").Value
+    readNewScreen18.Value = ws.Cells(rowNum, "M").Value
+    hourNow18.Value = ws.Cells(rowNum, "U").Value
+    
+    ' تعبئة بيانات C15 (من الصف التالي)
+    If rowNum + 1 <= ws.Cells(ws.Rows.Count, "C").End(xlUp).Row Then
+        diesel15.Value = ws.Cells(rowNum + 1, "D").Value
+        readNew15.Value = ws.Cells(rowNum + 1, "G").Value
+        readNewScreen15.Value = ws.Cells(rowNum + 1, "M").Value
+        hourNow15.Value = ws.Cells(rowNum + 1, "U").Value
+    End If
+End Sub
+
+Private Sub ClearFormFields()
+    
+    ' مسح حقول الإدخال
+    txtID.Value = ""
+    diesel18.Value = ""
+    readNew18.Value = ""
+    readNewScreen18.Value = ""
+    hourNow18.Value = ""
+    diesel15.Value = ""
+    readNew15.Value = ""
+    readNewScreen15.Value = ""
+    hourNow15.Value = ""
+End Sub
+
+Private Sub save_Click()
+    ' التحقق من وجود أي بيانات في الحقول
+    Dim hasData As Boolean
+    hasData = False
+    
+    ' التحقق من وجود بيانات في مجموعة C18
+    If diesel18.Value <> "" Or readNew18.Value <> "" Or _
+       readNewScreen18.Value <> "" Or hourNow18.Value <> "" Then
+        hasData = True
+    End If
+    
+    ' التحقق من وجود بيانات في مجموعة C15
+    If diesel15.Value <> "" Or readNew15.Value <> "" Or _
+       readNewScreen15.Value <> "" Or hourNow15.Value <> "" Then
+        hasData = True
+    End If
+    
+    ' إذا لم يكن هناك أي بيانات
+    If Not hasData Then
+        MsgBox "لا توجد بيانات للحفظ. الرجاء إدخال البيانات أولاً.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' التحقق من اكتمال البيانات
+    Dim group18Complete As Boolean
+    Dim group15Complete As Boolean
+    Dim ws As Worksheet
+    
+    Set ws = SheetCAT
+    
+    ' التحقق من اكتمال مجموعة C18
+    group18Complete = (diesel18.Value <> "" And readNew18.Value <> "" And _
+                       readNewScreen18.Value <> "" And hourNow18.Value <> "")
+    
+    ' التحقق من اكتمال مجموعة C15
+    group15Complete = (diesel15.Value <> "" And readNew15.Value <> "" And _
+                       readNewScreen15.Value <> "" And hourNow15.Value <> "")
+    
+    ' التعديل على البيانات الموجودة
+    If currentRow > 0 Then
+        If group18Complete Then
+            ws.Cells(currentRow, "D").Value = diesel18.Value
+            ws.Cells(currentRow, "G").Value = readNew18.Value
+            ws.Cells(currentRow, "M").Value = readNewScreen18.Value
+            ws.Cells(currentRow, "U").Value = hourNow18.Value
+        End If
+        
+        If group15Complete Then
+            If currentRow + 1 > ws.Cells(ws.Rows.Count, "C").End(xlUp).Row Then
+                ws.Rows(currentRow + 1).Insert
+                ws.Cells(currentRow + 1, "C").Value = txtDate.Value
+            End If
+            ws.Cells(currentRow + 1, "D").Value = diesel15.Value
+            ws.Cells(currentRow + 1, "G").Value = readNew15.Value
+            ws.Cells(currentRow + 1, "M").Value = readNewScreen15.Value
+            ws.Cells(currentRow + 1, "U").Value = hourNow15.Value
+            ws.Cells(currentRow + 1, "C").Value = txtDate.Value
+        End If
+        
+        MsgBox "تم تعديل البيانات بنجاح", vbInformation
+        ClearFormFields
+        UserForm_Initialize
+        ThisWorkbook.save
+        currentRow = 0
+        Exit Sub
+    End If
+    
+    ' إضافة بيانات جديدة
+    Dim LastRow As Long
+    Dim newRow As Long
+    
+    LastRow = ws.Cells(ws.Rows.Count, "D").End(xlUp).Row
+    
+    If ws.Cells(LastRow, "D").Value = "" Then
+        newRow = LastRow
+    Else
+        newRow = LastRow + 1
+    End If
+    
+    ' إضافة بيانات C18
+    If group18Complete Then
+        ws.Cells(newRow, "C").Value = txtDate.Value
+        ws.Cells(newRow, "D").Value = diesel18.Value
+        ws.Cells(newRow, "G").Value = readNew18.Value
+        ws.Cells(newRow, "M").Value = readNewScreen18.Value
+        ws.Cells(newRow, "U").Value = hourNow18.Value
+    End If
+    
+    ' إضافة بيانات C15
+    If group15Complete Then
+        Dim targetRow As Long
+        targetRow = IIf(group18Complete, newRow + 1, newRow)
+        
+        ws.Cells(targetRow, "C").Value = txtDate.Value
+        ws.Cells(targetRow, "D").Value = diesel15.Value
+        ws.Cells(targetRow, "G").Value = readNew15.Value
+        ws.Cells(targetRow, "M").Value = readNewScreen15.Value
+        ws.Cells(targetRow, "U").Value = hourNow15.Value
+    End If
+    
+    ' تنظيف الحقول بعد الحفظ
+    If group18Complete Then
+        diesel18.Value = ""
+        readNew18.Value = ""
+        readNewScreen18.Value = ""
+        hourNow18.Value = ""
+    End If
+    
+    If group15Complete Then
+        diesel15.Value = ""
+        readNew15.Value = ""
+        readNewScreen15.Value = ""
+        hourNow15.Value = ""
+    End If
+    
+    ' رسالة نجاح
+    Dim message As String
+    message = "تم حفظ البيانات بنجاح" & vbNewLine
+    If group18Complete Then message = message & "- مجموعة C18 كاملة" & vbNewLine
+    If group15Complete Then message = message & "- مجموعة C15 كاملة"
+    
+    If group18Complete Or group15Complete Then
+        MsgBox message, vbInformation
+    End If
+End Sub
+
+Private Sub UserForm_Resize()
+
+    ' إعادة العناصر إلى مواقعها الأصلية
+    Dim i As Integer
+    For i = 0 To UBound(ControlNames)
+        On Error Resume Next
+        Me.Controls(ControlNames(i)).Left = OriginalLeft(i)
+        Me.Controls(ControlNames(i)).Top = OriginalTop(i)
+    Next i
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO FormOne.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Private OriginalWidth As Double
+Private OriginalHeight As Double
+Private ControlPositions() As Variant
+
+Private Sub addDiesel_Click()
+    If DieselForm.Visible Then Exit Sub
+    DieselForm.Show
+End Sub
+
+
+Private Sub btnInsert_Click()
+If UFMain.Visible Then Exit Sub
+    UFMain.Show
+End Sub
+
+
+
+Private Sub cmdEdit_Click()
+    If EditeForm.Visible Then Exit Sub
+    EditeForm.Show
+    
+End Sub
+
+
+
+
+Private Sub CommandButton1_Click()
+Application.VBE.MainWindow.Visible = True
+End Sub
+
+
+
+
+
+    Sub pdfEx()
+    On Error GoTo ErrorHandler
+    Dim ws As Worksheet
+    Dim LastRow As Long
+    Dim lastCol As Long
+    Dim printArea As String
+    Dim originalSettings As Object
+    Dim pdfPath As String
+    Dim originalPrinter As String
+    Dim pdfPrinter As String
+    Dim printerSet As Boolean
+    Dim rngToPrint As Range
+    
+    ' حفظ إعدادات الطابعة الأصلية
+    originalPrinter = Application.ActivePrinter
+    printerSet = False
+    
+    ' محاولة تعيين طابعة PDF
+    pdfPrinter = "AnyDesk Printer"
+    On Error Resume Next
+    Application.ActivePrinter = pdfPrinter
+    If Err.Number = 0 Then printerSet = True
+    On Error GoTo ErrorHandler
+    
+    ' إنشاء مسار الحفظ على سطح المكتب
+    pdfPath = Environ("USERPROFILE") & "\Desktop\Backup\"
+    If Dir(pdfPath, vbDirectory) = "" Then MkDir pdfPath
+    pdfPath = pdfPath & "تقرير فني المولدات غليل " & "_" & Format(Now, "yyyy-mm-dd") & ".pdf"
+    
+    ' حفظ الإعدادات الأصلية للأوراق
+    Set originalSettings = CreateObject("Scripting.Dictionary")
+    
+    For Each ws In ThisWorkbook.Worksheets
+        ' تخطي الأوراق المخفية
+        If ws.Visible <> xlSheetVisible Then
+            GoTo SkipSheet
+        End If
+        
+        ' حفظ الإعدادات الحالية
+        originalSettings.Add ws.Name, Array( _
+            ws.PageSetup.printArea, _
+            ws.PageSetup.Orientation, _
+            ws.PageSetup.PaperSize, _
+            ws.PageSetup.Zoom, _
+            ws.PageSetup.FitToPagesWide, _
+            ws.PageSetup.FitToPagesTall _
+        )
+        
+        ' تحديد منطقة الطباعة بشكل ديناميكي
+        With ws
+            ' تحديد الصف الأخير من العمود D
+          LastRow = .Columns("D").Find("*", , xlValues, , xlByRows, xlPrevious).Row
+                If LastRow < 1 Then LastRow = 1
+            
+            ' تحديد العمود الأخير بشكل ديناميكي (لجميع الصفوف)
+            lastCol = .Cells.Find("*", .Range("A1"), xlFormulas, , xlByColumns, xlPrevious).Column
+            If lastCol < 1 Then lastCol = 1
+            
+            ' تحديد نطاق الطباعة
+            Set rngToPrint = .Range("A1", .Cells(LastRow, lastCol))
+        End With
+        
+        ' تطبيق الإعدادات الجديدة
+        With ws.PageSetup
+            .printArea = rngToPrint.Address
+            .Orientation = xlLandscape
+            .PaperSize = xlPaperA4
+            .Zoom = False
+            .FitToPagesWide = 1
+            .FitToPagesTall = False
+            
+            ' إعدادات هوامش
+            .LeftMargin = Application.InchesToPoints(0.25)
+            .RightMargin = Application.InchesToPoints(0.25)
+            .TopMargin = Application.InchesToPoints(0.75)
+            .BottomMargin = Application.InchesToPoints(0.75)
+        End With
+        
+        ' تأكيد تطبيق إعدادات الطباعة
+        ws.PageSetup.printArea = rngToPrint.Address
+        
+SkipSheet:
+    Next ws
+    
+    ' تصدير إلى PDF
+    ThisWorkbook.ExportAsFixedFormat _
+        Type:=xlTypePDF, _
+        Filename:=pdfPath, _
+        Quality:=xlQualityStandard, _
+        IncludeDocProperties:=True, _
+        IgnorePrintAreas:=False, _
+        OpenAfterPublish:=False
+    
+    ' استعادة الإعدادات الأصلية للأوراق
+    For Each ws In ThisWorkbook.Worksheets
+        If originalSettings.Exists(ws.Name) Then
+            Dim settings As Variant
+            settings = originalSettings(ws.Name)
+            
+            With ws.PageSetup
+                .printArea = settings(0)
+                .Orientation = settings(1)
+                .PaperSize = settings(2)
+                .Zoom = settings(3)
+                .FitToPagesWide = settings(4)
+                .FitToPagesTall = settings(5)
+            End With
+        End If
+    Next ws
+    
+    ' إظهار رسالة نجاح
+    MsgBox "تم تصدير الملف بنجاح إلى:" & vbCrLf & pdfPath, vbInformation, "تصدير PDF"
+    
+Cleanup:
+    ' استعادة الطابعة الأصلية
+    If originalPrinter <> "" Then
+        Application.ActivePrinter = originalPrinter
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' معالجة الأخطاء
+    MsgBox "حدث خطأ في الورقة '" & ws.Name & "': " & Err.Description, vbCritical
+    
+    ' استعادة إعدادات الأوراق في حالة خطأ
+    If Not originalSettings Is Nothing Then
+        For Each ws In ThisWorkbook.Worksheets
+            If originalSettings.Exists(ws.Name) Then
+                settings = originalSettings(ws.Name)
+                With ws.PageSetup
+                    .printArea = settings(0)
+                    .Orientation = settings(1)
+                    .PaperSize = settings(2)
+                    .Zoom = settings(3)
+                    .FitToPagesWide = settings(4)
+                    .FitToPagesTall = settings(5)
+                End With
+            End If
+        Next ws
+    End If
+    
+    ' استعادة الطابعة الأصلية
+    If originalPrinter <> "" Then
+        Application.ActivePrinter = originalPrinter
+    End If
+End Sub
+
+Private Sub exite_Click()
+        
+        ' عرض رسالة تأكيد مع جعل التركيز على زر "لا"
+        Dim response As VbMsgBoxResult
+        response = MsgBox("هل أنت متأكد من الخروج؟", vbQuestion + vbYesNo + vbDefaultButton2, "تأكيد الخروج")
+        
+        ' إذا اختار المستخدم نعم، قم بتنفيذ إجراء الخروج
+        If response = vbYes Then
+            ' استدعاء إجراء الخروج الموجود في زر exite_Click
+            exiteFan
+        End If
+End Sub
+
+Private Sub pdf_Click()
+pdfEx
+    End Sub
+    
+    
+
+
+
+
+Private Sub SaveAs_Click()
+    On Error GoTo ErrorHandler
+    Dim ws As Worksheet
+    Dim LastRow As Long
+    Dim lastCol As Long
+    Dim printArea As String
+    Dim originalSettings As Object
+    Dim pdfPath As Variant
+    Dim originalPrinter As String
+    Dim pdfPrinter As String
+    Dim printerSet As Boolean
+    Dim rngToPrint As Range
+    
+    ' حفظ إعدادات الطابعة الأصلية
+    originalPrinter = Application.ActivePrinter
+    printerSet = False
+    
+    ' محاولة تعيين طابعة PDF
+    pdfPrinter = "AnyDesk Printer"
+    On Error Resume Next
+    Application.ActivePrinter = pdfPrinter
+    If Err.Number = 0 Then printerSet = True
+    On Error GoTo ErrorHandler
+    
+    ' عرض مربع حوار "حفظ باسم" للمستخدم لاختيار مسار الحفظ واسم الملف
+    pdfPath = Application.GetSaveAsFilename( _
+        InitialFileName:=ThisWorkbook.Name & ".pdf", _
+        FileFilter:="PDF Files (*.pdf), *.pdf")
+        
+    If pdfPath = False Then ' إذا ألغى المستخدم عملية الحفظ
+        MsgBox "تم إلغاء عملية حفظ PDF.", vbInformation, "إلغاء الحفظ"
+        GoTo Cleanup
+    End If
+    
+    ' حفظ الإعدادات الأصلية للأوراق
+    Set originalSettings = CreateObject("Scripting.Dictionary")
+    
+    For Each ws In ThisWorkbook.Worksheets
+        ' تخطي الأوراق المخفية
+        If ws.Visible <> xlSheetVisible Then
+            GoTo SkipSheet
+        End If
+        
+        ' حفظ الإعدادات الحالية
+        originalSettings.Add ws.Name, Array( _
+            ws.PageSetup.printArea, _
+            ws.PageSetup.Orientation, _
+            ws.PageSetup.PaperSize, _
+            ws.PageSetup.Zoom, _
+            ws.PageSetup.FitToPagesWide, _
+            ws.PageSetup.FitToPagesTall _
+        )
+        
+        ' تحديد منطقة الطباعة بشكل ديناميكي
+        With ws
+            ' تحديد الصف الأخير من العمود D
+          LastRow = .Columns("D").Find("*", , xlValues, , xlByRows, xlPrevious).Row
+                If LastRow < 1 Then LastRow = 1
+            
+            ' تحديد العمود الأخير بشكل ديناميكي (لجميع الصفوف)
+            lastCol = .Cells.Find("*", .Range("A1"), xlFormulas, , xlByColumns, xlPrevious).Column
+            If lastCol < 1 Then lastCol = 1
+            
+            ' تحديد نطاق الطباعة
+            Set rngToPrint = .Range("A1", .Cells(LastRow, lastCol))
+        End With
+        
+        ' تطبيق الإعدادات الجديدة
+        With ws.PageSetup
+            .printArea = rngToPrint.Address
+            .Orientation = xlLandscape
+            .PaperSize = xlPaperA4
+            .Zoom = False
+            .FitToPagesWide = 1
+            .FitToPagesTall = False
+            
+            ' إعدادات هوامش
+            .LeftMargin = Application.InchesToPoints(0.25)
+            .RightMargin = Application.InchesToPoints(0.25)
+            .TopMargin = Application.InchesToPoints(0.75)
+            .BottomMargin = Application.InchesToPoints(0.75)
+        End With
+        
+        ' تأكيد تطبيق إعدادات الطباعة
+        ws.PageSetup.printArea = rngToPrint.Address
+        
+SkipSheet:
+    Next ws
+    
+    ' تصدير إلى PDF
+    ThisWorkbook.ExportAsFixedFormat _
+        Type:=xlTypePDF, _
+        Filename:=pdfPath, _
+        Quality:=xlQualityStandard, _
+        IncludeDocProperties:=True, _
+        IgnorePrintAreas:=False, _
+        OpenAfterPublish:=False
+    
+    ' استعادة الإعدادات الأصلية للأوراق
+    For Each ws In ThisWorkbook.Worksheets
+        If originalSettings.Exists(ws.Name) Then
+            Dim settings As Variant
+            settings = originalSettings(ws.Name)
+            
+            With ws.PageSetup
+                .printArea = settings(0)
+                .Orientation = settings(1)
+                .PaperSize = settings(2)
+                .Zoom = settings(3)
+                .FitToPagesWide = settings(4)
+                .FitToPagesTall = settings(5)
+            End With
+        End If
+    Next ws
+    
+    ' إظهار رسالة نجاح
+    MsgBox "تم تصدير الملف بنجاح إلى:" & vbCrLf & pdfPath, vbInformation, "تصدير PDF"
+    
+Cleanup:
+    ' استعادة الطابعة الأصلية
+    If originalPrinter <> "" Then
+        Application.ActivePrinter = originalPrinter
+    End If
+    Exit Sub
+    
+ErrorHandler:
+    ' معالجة الأخطاء
+    MsgBox "حدث خطأ في الورقة '" & ws.Name & "': " & Err.Description, vbCritical
+    
+    ' استعادة إعدادات الأوراق في حالة خطأ
+    If Not originalSettings Is Nothing Then
+        For Each ws In ThisWorkbook.Worksheets
+            If originalSettings.Exists(ws.Name) Then
+                settings = originalSettings(ws.Name)
+                With ws.PageSetup
+                    .printArea = settings(0)
+                    .Orientation = settings(1)
+                    .PaperSize = settings(2)
+                    .Zoom = settings(3)
+                    .FitToPagesWide = settings(4)
+                    .FitToPagesTall = settings(5)
+                End With
+            End If
+        Next ws
+    End If
+    
+    ' استعادة الطابعة الأصلية
+    If originalPrinter <> "" Then
+        Application.ActivePrinter = originalPrinter
+    End If
+
+
+   
+End Sub
+
+
+
+
+Private Sub showExcel_Click()
+    Application.Visible = Not Application.Visible
+End Sub
+
+Private Sub UserForm_Initialize()
+   
+    
+        AddMaximizeButton Me
+        AddMinimizeButton Me
+        
+    ' حفظ الأبعاد الأصلية
+    OriginalWidth = Me.InsideWidth
+    OriginalHeight = Me.InsideHeight
+    
+    ' حفظ المواقع الأصلية لكل عنصر
+    ReDim ControlPositions(Me.Controls.Count - 1, 3)
+    
+    Dim i As Integer
+    i = 0
+    For Each ctrl In Me.Controls
+        ControlPositions(i, 0) = ctrl.Left
+        ControlPositions(i, 1) = ctrl.Top
+        ControlPositions(i, 2) = ctrl.Width
+        ControlPositions(i, 3) = ctrl.Height
+        i = i + 1
+    Next ctrl
+End Sub
+
+  
+  
+
+
+Private Sub exiteFan()
+    On Error Resume Next ' تجاهل الأخطاء لتجنب ظهور الرسائل
+    
+    ' 1. حفظ الملف الأصلي
+    ThisWorkbook.save
+    
+    ' 2. حفظ نسخة احتياطية في المسار المحدد
+    Dim backupPath As String
+    Dim backupName As String
+    Dim backupFullPath As String
+    
+    ' تحديد مسار النسخ الاحتياطي
+    backupPath = "E:\BackupsMoain\"
+    
+    ' إنشاء اسم الملف: اسم الملف الأصلي + تاريخ ووقت النسخ الاحتياطي
+    backupName = "Backup " & Format(Now, "yyyy-mm-dd-hh-mm") & ThisWorkbook.Name
+    
+    ' إنشاء المسار إذا لم يكن موجوداً
+    If Dir(backupPath, vbDirectory) = "" Then MkDir backupPath
+    
+    ' حفظ النسخة الاحتياطية بدون إظهار رسائل
+    Application.DisplayAlerts = False
+    backupFullPath = backupPath & backupName
+    ThisWorkbook.SaveCopyAs backupFullPath
+    Application.DisplayAlerts = True
+    
+    ' 3. إغلاق التطبيق بأمان
+    Application.Quit
+End Sub
+
+
+
+
+Private Sub UserForm_Resize()
+  ' حساب نسبة التغير في الحجم
+    Dim widthRatio As Double
+    Dim heightRatio As Double
+    
+    widthRatio = Me.InsideWidth / OriginalWidth
+    heightRatio = Me.InsideHeight / OriginalHeight
+    
+    ' تحديث مواقع العناصر مع الحفاظ على الحجم الثابت
+    Dim i As Integer
+    i = 0
+    For Each ctrl In Me.Controls
+        ' تحديث الموقع مع الحفاظ على الحجم الأصلي
+        ctrl.Left = ControlPositions(i, 0) * widthRatio
+        ctrl.Top = ControlPositions(i, 1) * heightRatio
+        
+        ' الحفاظ على الحجم الأصلي دون تغيير
+        ctrl.Width = ControlPositions(i, 2)
+        ctrl.Height = ControlPositions(i, 3)
+        
+        i = i + 1
+    Next ctrl
+      
+End Sub
+
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+   
+   ' If CloseMode = vbFormControlMenu Then
+       ' MsgBox "لا يمكن استخدام هذا الزر", vbExclamation
+       ' Cancel = True
+   ' End If
+    
+    '''If CloseMode = vbFormControlMenu Then
+        ' إلغاء الإغلاق حتى نتأكد من رغبة المستخدم
+      '''  Cancel = True
+        
+        ' عرض رسالة تأكيد مع جعل التركيز على زر "لا"
+        '''Dim response As VbMsgBoxResult
+       ''' response = MsgBox("هل أنت متأكد من الخروج؟", vbQuestion + vbYesNo + vbDefaultButton2, "تأكيد الخروج")
+        
+        ' إذا اختار المستخدم نعم، قم بتنفيذ إجراء الخروج
+        '''If response = vbYes Then
+            ' استدعاء إجراء الخروج الموجود في زر exite_Click
+          '''  exiteFan
+      '''  End If
+    '''End If
+End Sub
+Private Sub UserForm_Activate()
+    MaximizeForm Me
+     
+End Sub
+
+
+-------------------------------------------------------------------------------
+VBA MACRO RegisterForm.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+' كود UserForm (RegisterForm)
+Private Sub cmdRegister_Click()
+    Dim ws As Worksheet
+    Dim newRow As Long
+    
+    ' التحقق من عدم ترك الحقول فارغة
+    If txtNewUser.Value = "" Or txtNewPass.Value = "" Then
+        MsgBox "يرجى إدخال جميع البيانات", vbExclamation
+        Exit Sub
+    End If
+    
+    Set ws = ThisWorkbook.Sheets("المستخدمين")
+    
+    ' التحقق من عدم تكرار اسم المستخدم
+    If Application.CountIf(ws.Columns(1), txtNewUser.Value) > 0 Then
+        MsgBox "اسم المستخدم موجود مسبقاً", vbExclamation
+        Exit Sub
+    End If
+    
+    ' إضافة المستخدم الجديد
+    newRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row + 1
+    ws.Cells(newRow, 1).Value = txtNewUser.Value
+    ws.Cells(newRow, 2).Value = txtNewPass.Value
+    
+    MsgBox "تم التسجيل بنجاح!", vbInformation
+    Unload Me
+    LoginForm.Show
+End Sub
+
+
+
+Private Sub VewVBA_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+Application.VBE.MainWindow.Visible = True
+End Sub
+
+-------------------------------------------------------------------------------
+VBA MACRO UFMain.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+    
+    
+    
+
+Private Sub save_Click()
+    ' التحقق من اكتمال بيانات المجموعات
+    Dim group18Complete As Boolean
+    Dim group15Complete As Boolean
+    
+    ' التحقق من اكتمال مجموعة C18
+    group18Complete = (diesel18.Value <> "" And readNew18.Value <> "" And _
+                       readNewScreen18.Value <> "" And hourNow18.Value <> "")
+    
+    ' التحقق من اكتمال مجموعة C15
+    group15Complete = (diesel15.Value <> "" And readNew15.Value <> "" And _
+                       readNewScreen15.Value <> "" And hourNow15.Value <> "")
+    
+    ' الخروج إذا لم تكن هناك بيانات كاملة
+    If Not group18Complete And Not group15Complete Then
+        MsgBox "لا توجد بيانات كاملة للحفظ. الرجاء إدخال جميع الحقول لكل مجموعة.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' التحقق من المجموعات غير المكتملة
+    Dim group18Partial As Boolean
+    Dim group15Partial As Boolean
+    
+    group18Partial = (diesel18.Value <> "" Or readNew18.Value <> "" Or _
+                      readNewScreen18.Value <> "" Or hourNow18.Value <> "")
+    
+    group15Partial = (diesel15.Value <> "" Or readNew15.Value <> "" Or _
+                      readNewScreen15.Value <> "" Or hourNow15.Value <> "")
+    
+    ' إظهار تحذير إذا كانت هناك مجموعة غير مكتملة
+    If group18Partial And Not group18Complete Then
+        MsgBox "تحذير: مجموعة C18 غير مكتملة. لن يتم حفظها.", vbExclamation
+    End If
+    
+    If group15Partial And Not group15Complete Then
+        MsgBox "تحذير: مجموعة C15 غير مكتملة. لن يتم حفظها.", vbExclamation
+    End If
+    
+    Dim LastRow As Long
+    Dim newRow As Long
+    
+    ' البحث عن أول صف فارغ في العمود D
+    LastRow = SheetCAT.Cells(Rows.Count, "D").End(xlUp).Row
+    
+    ' تحديد الصف الجديد للإضافة
+    If SheetCAT.Cells(LastRow, "D").Value = "" Then
+        newRow = LastRow ' إذا كان العمود فارغاً تماماً
+    Else
+        newRow = LastRow + 1 ' إذا وجدت بيانات
+    End If
+    
+    ' إضافة بيانات C18 إذا كانت مكتملة
+    If group18Complete Then
+        SheetCAT.Cells(newRow, "D").Value = diesel18.Value
+        SheetCAT.Cells(newRow, "G").Value = readNew18.Value
+        SheetCAT.Cells(newRow, "M").Value = readNewScreen18.Value
+        SheetCAT.Cells(newRow, "U").Value = hourNow18.Value
+    End If
+    
+    ' إضافة بيانات C15 إذا كانت مكتملة
+    If group15Complete Then
+        ' إذا كانت هناك بيانات C18 مكتملة نضيف C15 في الصف التالي
+        ' وإلا نضيفها في نفس الصف
+        Dim targetRow As Long
+        targetRow = IIf(group18Complete, newRow + 1, newRow)
+        
+        SheetCAT.Cells(targetRow, "D").Value = diesel15.Value
+        SheetCAT.Cells(targetRow, "G").Value = readNew15.Value
+        SheetCAT.Cells(targetRow, "M").Value = readNewScreen15.Value
+        SheetCAT.Cells(targetRow, "U").Value = hourNow15.Value
+    End If
+    
+    ' تنظيف حقول C18 إذا تم حفظها
+    If group18Complete Then
+        readNew18.Value = ""
+        readNewScreen18.Value = ""
+        hourNow18.Value = ""
+        diesel18.Value = ""
+    End If
+    
+    ' تنظيف حقول C15 إذا تم حفظها
+    If group15Complete Then
+        readNew15.Value = ""
+        readNewScreen15.Value = ""
+        hourNow15.Value = ""
+        diesel15.Value = ""
+    End If
+    
+    ' رسالة نجاح مع تفاصيل
+    Dim message As String
+    message = "تم حفظ البيانات بنجاح" & vbNewLine
+    ActivMethod
+    
+    If group18Complete Then message = message & "- مجموعة C18 كاملة" & vbNewLine
+    If group15Complete Then message = message & "- مجموعة C15 كاملة"
+    
+    ' إظهار الرسالة فقط إذا تم حفظ أي مجموعة
+    If group18Complete Or group15Complete Then
+        MsgBox message, vbInformation
+    End If
+End Sub
+
+
+
+Private Sub UserForm_Initialize()
+ActivMethod
+    Application.WindowState = xlMaximized
+
+End Sub
+
+
+
+Sub ActivMethod()
+ Dim LastRow As Long
+    Dim newRow As Long
+    Dim ws As Worksheet
+    
+    Set ws = ThisWorkbook.Sheets("المولدات")
+    
+    ' البحث عن أول صف فارغ في العمود D
+    LastRow = ws.Cells(ws.Rows.Count, "D").End(xlUp).Row
+    
+    ' تحديد الصف الجديد للإضافة
+    If ws.Cells(LastRow, "D").Value = "" Then
+        newRow = LastRow
+    Else
+        newRow = LastRow + 1
+    End If
+     ' عرض القيمة من العمود A في txtID
+    Me.txtID.Value = ws.Cells(newRow, "A").Value
+
+  
+    ' عرض التاريخ بالتنسيق المطلوب
+    If IsDate(ws.Cells(newRow, "C").Value) Then
+        ' اختر أحد التنسيقات التالية
+        Me.txtDate.Value = Format(ws.Cells(newRow, "C").Value, "dd/mm/yyyy")
+    Else
+        Me.txtDate.Value = ws.Cells(newRow, "C").Value
+    End If
+End Sub
+-------------------------------------------------------------------------------
+VBA MACRO LoginForm.frm 
+in file: xl/vbaProject.bin - OLE stream: 'VBA/LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+' كود UserForm (LoginForm)
+Private Sub cmdLogin_Click()
+    Dim ws As Worksheet
+    Dim userRow As Long
+    Dim found As Boolean
+    
+    Set ws = ThisWorkbook.Sheets("المستخدمين")
+    found = False
+    
+    ' البحث عن المستخدم في القائمة
+    For userRow = 2 To ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+        If LCase(ws.Cells(userRow, 1).Value) = LCase(txtUsername.Value) Then
+            If ws.Cells(userRow, 2).Value = txtPassword.Value Then
+                found = True
+                Exit For
+            End If
+        End If
+    Next userRow
+    
+    If found Then
+        MsgBox "تم الدخول بنجاح!", vbInformation
+        ' الانتقال للواجهة الرئيسية
+       LoginForm.Hide
+        FormOne.Show
+        Unload Me
+        
+    Else
+        MsgBox "بيانات الدخول غير صحيحة", vbCritical
+        txtPassword.Value = ""
+    End If
+End Sub
+
+Private Sub cmdRegister_Click()
+    Unload Me
+    RegisterForm.Show
+End Sub
+
+
+Private Sub UserForm_Initialize()
+    txtUsername.SetFocus
+End Sub
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma'
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma'
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma'
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+TahomaK
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Adelle Sans ARA Extrabold
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Ariala
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+H�,���
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+H�,���
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialata
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial2r
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'FormOne/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial7
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialser
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialser
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arialser
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+�@ria�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Amiri
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Arial
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+TahomaFr
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ArialaFr
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahomar
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+H�,���
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+H�,���
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma�
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma 
+-------------------------------------------------------------------------------
+VBA FORM STRING IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63/o'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Tahoma'
+-------------------------------------------------------------------------------
+VBA FORM Variable "b"'\x06D\x06*\x06'\x061\x06J\x06.\x06"" IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cboMonth'" IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cboYear'" IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdOK'" IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'lstDays'" IN 'xl/vbaProject.bin' - OLE stream: 'CalendarForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtDate'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'lablDtat'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdEdit'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label4'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdChooseDate'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdSearch'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame1'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'SaveData'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label3'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label2'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'ReceiptNum'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtDocumentNumber'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtQuantity'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtDetails'" IN 'xl/vbaProject.bin' - OLE stream: 'DieselForm/i17'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNew18'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label1'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label2'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNew15'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label4'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label5'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNewScreen18'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label6'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label7'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNewScreen15'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'hourNow18'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label9'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'hourNow15'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'diesel18'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'diesel15'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'save'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label15'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label16'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label17'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtDate'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtID'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label18'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'btnSearch'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'btnDatePicker'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label19'" IN 'xl/vbaProject.bin' - OLE stream: 'EditeForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'exite'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'pdf'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'showExcel'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdEdit'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'addDiesel'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'btnInsert'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'SaveAs'" IN 'xl/vbaProject.bin' - OLE stream: 'FormOne'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdLogin'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtPassword'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtUsername'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdRegister'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label1'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label2'" IN 'xl/vbaProject.bin' - OLE stream: 'LoginForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'cmdRegister'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtNewUser'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtNewPass'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label1'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label2'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'VewVBA'" IN 'xl/vbaProject.bin' - OLE stream: 'RegisterForm'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame1'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame4'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame5'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame6'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Frame7'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'save'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNew18'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label4'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label1'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label2'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNew15'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i56'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'hourNow18'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label15'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label9'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'hourNow15'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i60'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNewScreen18'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label5'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label6'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label7'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'readNewScreen15'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i61'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'diesel18'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label16'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'diesel15'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label17'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i62'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtID'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'txtDate'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+b''
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label18'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
+-------------------------------------------------------------------------------
+VBA FORM Variable "b'Label19'" IN 'xl/vbaProject.bin' - OLE stream: 'UFMain/i63'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+None
++----------+--------------------+---------------------------------------------+
+|Type      |Keyword             |Description                                  |
++----------+--------------------+---------------------------------------------+
+|AutoExec  |cmdOK_Click         |Runs when the file is opened and ActiveX     |
+|          |                    |objects trigger events                       |
+|AutoExec  |cboMonth_Change     |Runs when the file is opened and ActiveX     |
+|          |                    |objects trigger events                       |
+|AutoExec  |UserForm_Resize     |Runs when the file is opened and ActiveX     |
+|          |                    |objects trigger events                       |
+|Suspicious|Environ             |May read system environment variables        |
+|Suspicious|Call                |May call a DLL using Excel 4 Macros (XLM/XLF)|
+|Suspicious|Application.Visible |May hide the application                     |
+|Suspicious|ShowWindow          |May hide the application                     |
+|Suspicious|MkDir               |May create a directory                       |
+|Suspicious|CreateObject        |May create an OLE object                     |
+|Suspicious|FindWindow          |May enumerate application windows (if        |
+|          |                    |combined with Shell.Application object)      |
+|Suspicious|Lib                 |May run code from a DLL                      |
+|Suspicious|Hex Strings         |Hex-encoded strings were detected, may be    |
+|          |                    |used to obfuscate strings (option --decode to|
+|          |                    |see all)                                     |
+|Suspicious|Base64 Strings      |Base64-encoded strings were detected, may be |
+|          |                    |used to obfuscate strings (option --decode to|
+|          |                    |see all)                                     |
+|IOC       |Application.VBE     |Executable file name                         |
++----------+--------------------+---------------------------------------------+
+
