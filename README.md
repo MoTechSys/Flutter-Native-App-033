@@ -8,6 +8,8 @@
 - تسجيل/دخول مع تحقق، واستعادة كلمة المرور برمز OTP في 3 خطوات.
 - زر الرجوع يعود خطوة بخطوة داخل كل تبويب ولا يخرج من التطبيق فجأة.
 
+**📱 آخر APK جاهز للتثبيت:** [`releases/Kitabi-v1.1.0.apk`](releases/Kitabi-v1.1.0.apk) · **🛠 كيف تبني APK بنفسك:** [`BUILD_GUIDE.md`](BUILD_GUIDE.md) · **📓 سجل التطوير:** [`docs/SESSION_LOG.md`](docs/SESSION_LOG.md)
+
 التوثيق الكامل: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · ملاحظات الإصدار: [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES_1.0.0.md)
 
 ```bash
