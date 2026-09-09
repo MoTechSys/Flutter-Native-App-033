@@ -12,7 +12,7 @@
 | حذف `permission_handler` | ✅ | لم تكن مستخدمة؛ الأذونات في Manifest |
 | `build.gradle.kts`: minSdk 21، resourceConfigurations ar/en، minify+shrink، proguard، تقسيم ABI، توقيع من key.properties | ✅ | راجع `12_RELEASE_GUIDE.md` §1 |
 | `AndroidManifest.xml`: CAMERA، INTERNET، WRITE_EXTERNAL_STORAGE(≤28)، `<queries>` لواتساب/SMS/هاتف/TTS/كاميرا | ✅ | لازم لأندرويد 11+ حتى يعمل `url_launcher.canLaunch` |
-| ملفات التوقيع `android/key.properties` + `release-key.jks` | ✅ خارج Git | **احفظ نسخة آمنة** |
+| ملفات التوقيع `android/key.properties` + `release-key.jks` | ✅ **داخل Git** (D17) | العميل طلب رفع كل شيء؛ يلزم تحويل المستودع إلى Private بيده (التوكن لا يملك الصلاحية) |
 | بناء `flutter build apk --release --split-per-abi` | ✅ | arm64 = 23.2 MB، armv7 = 21.3 MB، موقّعان (apksigner verified) |
 | نقل أصل غير مستخدم (337KB) خارج APK | ✅ | `assets/images/legacy_logo_reference.png` → `docs/design/` |
 | الإصدار | ✅ | `0.2.0+2` (pubspec + القائمة الجانبية) |

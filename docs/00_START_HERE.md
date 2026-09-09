@@ -50,7 +50,7 @@
 - الويب يُستخدم **للمعاينة أثناء التطوير فقط** (`--dart-define=DEMO=true`) لأن الساندبوكس لا يشغّل محاكي أندرويد. لا تُضف أي ميزة تعتمد على الويب.
 - إعدادات الحجم في `android/app/build.gradle.kts`: `minSdk 21`، `resourceConfigurations ar/en`، `isMinifyEnabled` + `isShrinkResources`، `proguard-rules.pro`، تقسيم حسب المعالج (arm64-v8a + armeabi-v7a، بلا APK شامل).
 - النتيجة الحالية (v0.2.0+2): **arm64 ≈ 23.2 MB / armv7 ≈ 21.3 MB** موقّعان.
-- ملفات التوقيع `android/key.properties` + `android/release-key.jks` **خارج Git** (.gitignore). إن ضاعت → لا يمكن تحديث التطبيق عند نفس الزبائن دون إعادة تثبيت. انظر `12_RELEASE_GUIDE.md`.
+- ملفات التوقيع `android/key.properties` + `android/release-key.jks` **داخل Git عمداً** (D17) حتى يبني أي وكيل APK قابلاً للتحديث مباشرة. **الشرط: المستودع خاص.** لا تغيّر المفتاح أبداً. انظر `12_RELEASE_GUIDE.md §3`.
 
 ## أوامر سريعة
 ```bash

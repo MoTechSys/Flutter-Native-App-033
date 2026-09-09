@@ -45,6 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Release signing — never commit
-android/key.properties
-android/*.jks
-android/app/*.jks
+# Signing files ARE committed on purpose (client decision D17, session 4) so any new agent can
+# build an updatable APK without hunting for backups. Repo MUST be private. See docs/12_RELEASE_GUIDE.md §3.
+# android/key.properties
+# android/*.jks

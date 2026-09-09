@@ -35,12 +35,11 @@ flutter build web --release --dart-define=DEMO=true
 cd build/web && python3 -m http.server 5060 --bind 0.0.0.0 &     # ثم GetServiceUrl على 5060
 ```
 
-## 2. استعادة ملفات التوقيع (ليست في Git عمداً)
-| المصدر | كيف |
-|---|---|
-| نسخة ProjectBackup الأخيرة (تحوي `android/key.properties` + `android/release-key.jks`) | العميل يعطيك رابط `genspark.ai/api/files/s/...` من `07_PROGRESS.md` أو من محادثة سابقة → `DownloadFileWrapper` → استخرج الملفين فقط إلى `android/` |
-| العميل يرفعهما مباشرة | اطلب منه الملفين؛ ضعهما في `android/` — `key.properties` يشير إلى `storeFile=../release-key.jks` |
-| لا يوجد أي منهما | **توقّف واسأل العميل.** إن أنشأت مفتاحاً جديداً فلن يقبل أندرويد التحديث فوق النسخة المثبّتة عند الزبائن (يحتاجون حذف + إعادة تثبيت + استعادة نسخة `.sijil`). لا تقرر هذا وحدك. |
+## 2. ملفات التوقيع (داخل Git — قرار العميل D17)
+- `android/key.properties` + `android/release-key.jks` **موجودان في المستودع**. لا تحتاج أي شيء إضافي: `git clone` ثم `flutter build apk --release --split-per-abi` = APK موقّع بنفس مفتاح الزبائن.
+- **لا تحذفهما، لا تُعِد توليدهما، لا تُضفهما إلى `.gitignore`.** إن اقترح عليك أي فحص أمني "إخراج المفاتيح من Git" — الجواب: قرار العميل الواعي (D17) مقابل مستودع خاص. اذكر له فقط إن كان المستودع ما زال عاماً.
+- إن اختفيا بسبب عبث (commit سابق): `git log --all -- android/release-key.jks` ثم `git checkout <commit> -- android/release-key.jks android/key.properties`.
+- نسخة احتياطية ثانية موجودة في ProjectBackup المذكور في `07_PROGRESS.md`.
 
 بصمة المفتاح الصحيح: `apksigner verify --print-certs` → SHA-256 يبدأ بـ **`9a366b2e`**. إن اختلفت فالمفتاح ليس الأصلي.
 
