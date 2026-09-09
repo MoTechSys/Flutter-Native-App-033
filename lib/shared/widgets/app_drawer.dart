@@ -104,7 +104,7 @@ class AppDrawer extends StatelessWidget {
                               color: AppColors.darkAccent,
                               fontSize: 20,
                               fontWeight: FontWeight.w700)),
-                      Text('${S.version} 0.1.0',
+                      Text('${S.version} 0.2.0',
                           style: TextStyle(color: Colors.white54, fontSize: 12)),
                     ],
                   ),

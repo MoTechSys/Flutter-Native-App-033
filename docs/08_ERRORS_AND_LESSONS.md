@@ -70,3 +70,9 @@
 
 ## E11 — الشاشات تُختبر بالنقر على إحداثيات (Canvas)
 - Flutter web يرسم على canvas؛ لا يمكن اختيار عناصر بـ DOM في Playwright. **الحل:** لقطة أولى لمعايرة الإحداثيات، ثم النقر بها؛ كل تغيير تخطيط يستلزم إعادة معايرة (`docs/research/shot_p1*.py`).
+
+## E12 — "Gradle build failed to produce an .apk file" بعد بناء ناجح
+- مع `splits.abi.isUniversalApk = false`، يبني Gradle ملفي `app-arm64-v8a-release.apk` و`app-armeabi-v7a-release.apk` بنجاح، ثم يطبع Flutter الرسالة أعلاه لأنه يتوقع `app-release.apk` الشامل. **رسالة زائفة** — تحقق بـ `ls build/app/outputs/flutter-apk/`. لا تُفعّل universal لحلّها (يضاعف الحجم).
+
+## E13 — `flutter build apk` يطبع "Upgrading build.gradle.kts"
+- Flutter يلمس الملف تلقائياً في أول بناء أندرويد. تحققنا بـ `git diff android/` أنّ إعداداتنا (التوقيع/التقليص/ABI) سليمة. **القاعدة:** بعد أي بناء أندرويد على بيئة جديدة، راجع `git diff android/` قبل الـ commit.

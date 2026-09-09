@@ -1,7 +1,7 @@
 name: sijil
 description: "سِجِل — دفتر ديون رقمي للمحلات اليمنية، يعمل بدون إنترنت، مصمَّم ليستخدمه الأمي والمتعلّم."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.0+2
 
 environment:
   sdk: ^3.9.0
@@ -46,7 +46,6 @@ dependencies:
 
   # --- Misc ---
   intl: ^0.20.2
-  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

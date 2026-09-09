@@ -27,6 +27,9 @@
 | `07_PROGRESS.md` | **سجل التقدّم**: ما أُنجز / ما يجري / ما بقي — يُحدَّث كل جلسة | **دائماً ثانياً** |
 | `08_ERRORS_AND_LESSONS.md` | الأخطاء التي واجهناها وحلولها + قرارات تراجعنا عنها | عند أي مشكلة |
 | `09_DOCUMENTS_SPEC.md` | مواصفات المستندات الرسمية (A4): الأنواع، القوالب، محرر الترويسة، JSON | قبل العمل على PDF |
+| `11_AUDIT_PHASE1_2.md` | تدقيق ما بُني مقابل البحث والخطة: ما تحقق، ما سُدّ من فجوات، الدَّين التقني المُعلَن | قبل الحكم على جودة الكود |
+| `12_RELEASE_GUIDE.md` | **دليل الإصدار**: بناء APK أندرويد، التوقيع، توليد أكواد التفعيل، اختبار الميدان (D13) | قبل إعطاء التطبيق لأي زبون |
+| `../README.md` | ملخّص تسليم بالعربية (للمالك + أي وكيل جديد) — يكرّر أهم ما هنا باختصار | نظرة سريعة |
 | `design/mockups/` | صور التصاميم المعتمدة والمرفوضة | مرجع بصري |
 | `design/pdf_poc_*` | إثبات عملي: PDF عربي A4 وُلِّد على هذه البيئة | مرجع PDF |
 | `research/` | ملفات خام: تحليل إكسل العميل القديم، نتائج بحث | مرجع |
@@ -40,19 +43,39 @@
 6. لا `print()`، لا `withOpacity()`، لا `!` بدون تحقق.
 7. الأوامر تُنفَّذ من `/home/user/flutter_app` دائماً.
 
+## المنصّة المستهدفة: أندرويد فقط (قرار العميل — جلسة 4)
+- **المنتج = APK أندرويد** صغير الحجم. لا iOS، لا ويب، لا سطح مكتب حالياً.
+- الويب يُستخدم **للمعاينة أثناء التطوير فقط** (`--dart-define=DEMO=true`) لأن الساندبوكس لا يشغّل محاكي أندرويد. لا تُضف أي ميزة تعتمد على الويب.
+- إعدادات الحجم في `android/app/build.gradle.kts`: `minSdk 21`، `resourceConfigurations ar/en`، `isMinifyEnabled` + `isShrinkResources`، `proguard-rules.pro`، تقسيم حسب المعالج (arm64-v8a + armeabi-v7a، بلا APK شامل).
+- النتيجة الحالية (v0.2.0+2): **arm64 ≈ 23.2 MB / armv7 ≈ 21.3 MB** موقّعان.
+- ملفات التوقيع `android/key.properties` + `android/release-key.jks` **خارج Git** (.gitignore). إن ضاعت → لا يمكن تحديث التطبيق عند نفس الزبائن دون إعادة تثبيت. انظر `12_RELEASE_GUIDE.md`.
+
 ## أوامر سريعة
 ```bash
 cd /home/user/flutter_app
 flutter pub get
-flutter analyze
-flutter test                          # كل الاختبارات
+flutter analyze                       # يجب: No issues found
+flutter test                          # كل الاختبارات (93 حالياً)
 flutter test test/ledger              # اختبارات المحاسبة فقط
-flutter build web --release           # بناء حقيقي (يبدأ بشاشة التهيئة — بلا بيانات)
-flutter build web --release --dart-define=DEMO=true   # معاينة ببيانات تجريبية (بقالة الأمل)
-dart run tool/gen_activation.dart <deviceId> Y1   # توليد كود تفعيل للبائع
+
+# ===== المنتج الحقيقي: أندرويد =====
+flutter build apk --release --split-per-abi
+#   → build/app/outputs/flutter-apk/app-arm64-v8a-release.apk   (الهواتف الحديثة)
+#   → build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk (الهواتف القديمة الرخيصة)
+# ملاحظة: Flutter قد يطبع بعد النجاح "Gradle build failed to produce an .apk file" — رسالة زائفة
+# سببها تقسيم ABI؛ تحقق بوجود الملفين أعلاه.
+
+# ===== معاينة تطوير فقط (ويب) =====
+flutter build web --release --dart-define=DEMO=true   # ببيانات تجريبية (بقالة الأمل)
+
+# ===== أدوات =====
+dart run tool/gen_activation.dart <deviceId> Y1   # توليد كود تفعيل للبائع (Y1|Y3|LIFE)
 DUMP_PDF=1 flutter test test/tool_dump_pdfs_test.dart  # عينات PDF إلى /tmp/pdfout
 python3 docs/research/shot_p1b.py     # لقطات المسار الكامل عبر رابط المعاينة (عدّل URL أولاً)
 ```
+
+## GitHub
+المستودع: **https://github.com/MoTechSys/Flutter-Native-App-033** (فرع `main`). كل جلسة تنتهي بـ commit + push، وتحديث `07_PROGRESS.md`.
 
 ## اللغة
 التوثيق بالعربية (لغة العميل). أسماء الملفات والكود والتعليقات التقنية بالإنجليزية. النصوص الظاهرة للمستخدم عربية.

@@ -109,9 +109,15 @@ UI (features/*)  ── Provider/ChangeNotifier ──►  Repositories (data/) 
 | path_provider, path | | مسارات |
 | shared_preferences | ^2.5.3 | إعدادات خفيفة |
 | intl | ^0.20.2 | تنسيق تواريخ/أرقام |
-| permission_handler | ^11.3.1 | كاميرا/ميكروفون |
+| ~~permission_handler~~ | — | **حُذفت في جلسة 4**: لم تُستخدم فعلياً؛ `image_picker` يطلب الكاميرا بنفسه والأذونات مُعلنة في `AndroidManifest.xml`. حذفها قلّص APK. |
 
 **كل هذه حُلَّت بنجاح مع Flutter 3.35.4** (اختُبر بـ`flutter pub get`).
+
+### 7.1 المنصّة المستهدفة: أندرويد فقط (جلسة 4)
+- المنتج = APK أندرويد. الويب معاينة تطوير فقط (`DEMO=true`) لأن الساندبوكس بلا محاكي.
+- **قبل إضافة أي حزمة:** تحقق أنها تدعم Android، وتُضيف حجماً معقولاً (< 1MB مثالياً). لا داعي لدعم Web/iOS.
+- إعدادات الحجم والتوقيع في `android/app/build.gradle.kts` و`proguard-rules.pro` — مفصّلة في `12_RELEASE_GUIDE.md`.
+- إن أضفت حزمة بكود Java/Kotlin يُستدعى بالانعكاس (reflection)، أضف قاعدة `-keep` لها في `proguard-rules.pro` وإلا قد تتعطّل في release فقط.
 
 ## 8. التسمية والأسلوب
 - ملفات `snake_case.dart`، أصناف `PascalCase`، ثوابت `camelCase`.
