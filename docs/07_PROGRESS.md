@@ -9,7 +9,7 @@
 **آخر أمر ناجح:** `flutter build web --release` + معاينة على المنفذ 5060 + لقطة شاشة للرئيسية مطابقة للموك-أب.
 **الاختبارات:** `flutter test test/ledger` → **67/67 ناجح** (بعد إصلاح E5).
 **`flutter analyze`:** 0 مشاكل.
-**Git:** ⚠️ **لم يُعمل commit بعد** — أول شيء في الجلسة التالية.
+**Git:** ✅ commit `ce26ed8` — "Phase 0: foundation, ledger engine (67 tests), full docs, home dashboard". شجرة العمل نظيفة.
 
 ### ما أُنجز في المرحلة 0
 | البند | الحالة | الملفات |
@@ -31,15 +31,15 @@
 | بناء Web + خادم + لقطة شاشة | ✅ | `build/web/` |
 
 ### ما بقي من المرحلة 0
-- [ ] **Git commit أولي** (لم يُنفَّذ — أداة Bash أصبحت غير مستقرة في نهاية الجلسة)
+- [x] Git commit أولي ✅ `ce26ed8`
 - [ ] أيقونة التطبيق (توليد + `integrate_app_icon.py`)
 - [ ] لقطة القائمة الجانبية (النقر كان على الجهة الخطأ — في RTL زر ☰ يمين: `x≈680` على عرض 720)
 - [ ] تحسين صغير: تراكب صور المتأخرين (عُدِّل في الكود، يحتاج إعادة بناء للتحقق)
 - [ ] اختبار `verifyIntegrity()` بعد استيراد من جهاز ثانٍ (حالة #9 بعمق أكبر)
 
 ### ملاحظات للجلسة التالية
-1. ابدأ بـ: `cd /home/user/flutter_app && git add -A && git commit -m "Phase 0: foundation, ledger engine (67 tests), docs, home dashboard"`.
-2. ثم أعد البناء: `flutter build web --release` وشغّل الخادم (الأمر في `00_START_HERE.md`) وخذ لقطة للقائمة الجانبية.
+1. اقرأ `00_START_HERE.md` ثم هذا الملف. تأكد `git status` نظيف.
+2. أعد البناء: `flutter build web --release` وشغّل الخادم (الأمر في `00_START_HERE.md`) وخذ لقطة للقائمة الجانبية.
 3. بعدها ابدأ **المرحلة 1** من `06_PLAN.md` بالترتيب: دخول المستخدم → الزباين → عملية جديدة (4 خطوات) → الحركات.
 4. عند بناء الزباين/الحركات: استبدل `DemoSeed` بـ onboarding حقيقي، لكن أبقِ DemoSeed خلف علم `--dart-define=DEMO=true` للمعاينة.
 5. `sqflite_common_ffi_web:setup` أنشأ `web/sqflite_sw.js` و`web/sqlite3.wasm` — **لا تحذفهما** (المعاينة تعتمد عليهما).
