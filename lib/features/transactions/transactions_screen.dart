@@ -10,6 +10,7 @@ import '../../shared/utils/date_labels.dart';
 import '../../shared/widgets/filter_chips.dart';
 import '../../shared/widgets/tx_tile.dart';
 import 'new_transaction_flow.dart';
+import '../../shared/widgets/app_back_button.dart';
 
 /// Transactions list — mockup `03_transactions_list.png` (docs/03 §6.3):
 /// chips الكل/أخذوا/دفعوا/اليوم, sticky-ish date headers, 72dp rows,
@@ -79,6 +80,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: _searching
             ? TextField(
                 controller: _search,

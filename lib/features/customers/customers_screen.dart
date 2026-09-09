@@ -12,6 +12,7 @@ import '../../shared/widgets/customer_avatar.dart';
 import '../../shared/widgets/filter_chips.dart';
 import '../../shared/widgets/money_text.dart';
 import 'add_customer_screen.dart';
+import '../../shared/widgets/app_back_button.dart';
 
 /// Customers (docs/03 §6.6): grid/list toggle, filter chips, sort, search, FAB.
 /// Used both as a destination and as step 1 of "new transaction" when
@@ -75,6 +76,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: _searching
             ? TextField(
                 controller: _search,

@@ -49,6 +49,8 @@ flutter test                          # كل الاختبارات
 flutter test test/ledger              # اختبارات المحاسبة فقط
 flutter build web --release           # بناء حقيقي (يبدأ بشاشة التهيئة — بلا بيانات)
 flutter build web --release --dart-define=DEMO=true   # معاينة ببيانات تجريبية (بقالة الأمل)
+dart run tool/gen_activation.dart <deviceId> Y1   # توليد كود تفعيل للبائع
+DUMP_PDF=1 flutter test test/tool_dump_pdfs_test.dart  # عينات PDF إلى /tmp/pdfout
 python3 docs/research/shot_p1b.py     # لقطات المسار الكامل عبر رابط المعاينة (عدّل URL أولاً)
 ```
 

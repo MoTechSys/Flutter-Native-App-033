@@ -9,6 +9,7 @@ import '../../core/money/money_format.dart';
 import '../../data/app_services.dart';
 import '../../data/models/customer.dart';
 import '../../data/repositories/transactions_repository.dart';
+import '../../data/repositories/settings_repository.dart';
 import '../../data/session/session_provider.dart';
 import '../../shared/l10n/ar_strings.dart';
 import '../../shared/services/reminder_service.dart';
@@ -18,6 +19,7 @@ import '../../shared/widgets/customer_avatar.dart';
 import '../../shared/widgets/tx_tile.dart';
 import '../transactions/new_transaction_flow.dart';
 import 'add_customer_screen.dart';
+import '../../shared/widgets/app_back_button.dart';
 
 /// Customer page (docs/03 §6.5). One screen, no long scroll: header, big
 /// balance, action row, last 5 transactions + "الكل".
@@ -79,8 +81,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
     final s = context.read<AppServices>();
     final session = context.read<SessionProvider>();
+    final template = context.read<SettingsRepository>().get<String>(SettingsRepository.kReminderTemplate);
     final bal = _balances.isEmpty ? Money.zero(await s.customers.primaryCurrency()) : _balances.first.balance;
-    final svc = ReminderService(s.db);
+    final svc = ReminderService(s.db, template: template);
     final by = session.user?.id ?? 'unknown';
     final shop = session.shop?.name ?? S.appName;
     final ok = whatsapp
@@ -118,6 +121,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     final isOwner = context.watch<SessionProvider>().isOwner;
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(c?.name ?? ''),
         actions: [
           if (c != null)
@@ -245,7 +249,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     icon: Icons.description_rounded,
                     label: S.statement,
                     color: AppColors.primary,
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.reports)),
+                    onTap: () => Navigator.pushNamed(context, AppRoutes.documents, arguments: c.id)),
               ),
             ],
           ),

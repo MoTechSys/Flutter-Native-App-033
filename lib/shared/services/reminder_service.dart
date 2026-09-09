@@ -12,22 +12,35 @@ import '../../data/models/customer.dart';
 /// Logs every send into `reminders` so the owner can see history (phase 2).
 class ReminderService {
   final Database _db;
-  ReminderService(this._db);
+  final String? template;
+  ReminderService(this._db, {this.template});
 
   static const _uuid = Uuid();
 
-  /// Default template (editable in phase 2, docs/09).
+  static const defaultTemplate =
+      'السلام عليكم {name}،\nتذكير من {shop}: المتبقي عليك {amount} ({words}).\nنشكر تعاونك.';
+
+  /// Fills {name} {shop} {amount} {words} in [template] (settings-editable, D11 spirit).
+  static String render(String template, {
+    required String shopName,
+    required String customerName,
+    required Money balance,
+  }) =>
+      template
+          .replaceAll('{name}', customerName)
+          .replaceAll('{shop}', shopName)
+          .replaceAll('{amount}', MoneyFormat.withName(balance.abs))
+          .replaceAll('{words}', ArabicWords.money(balance.abs));
+
   static String defaultMessage({
     required String shopName,
     required String customerName,
     required Money balance,
-  }) {
-    final amt = MoneyFormat.withSymbol(balance.abs);
-    final words = ArabicWords.money(balance.abs);
-    return 'السلام عليكم $customerName،\n'
-        'تذكير من $shopName: المتبقي عليك $amt ($words).\n'
-        'نشكر تعاونك.';
-  }
+  }) =>
+      render(defaultTemplate, shopName: shopName, customerName: customerName, balance: balance);
+
+  String _message(Customer c, Money balance, String shopName) =>
+      render(template ?? defaultTemplate, shopName: shopName, customerName: c.name, balance: balance);
 
   Future<bool> sendWhatsApp({
     required Customer customer,
@@ -38,8 +51,7 @@ class ReminderService {
   }) async {
     final phone = customer.phoneE164;
     if (phone == null) return false;
-    final text = message ??
-        defaultMessage(shopName: shopName, customerName: customer.name, balance: balance);
+    final text = message ?? _message(customer, balance, shopName);
     final uri = Uri.parse(
         'https://wa.me/${phone.replaceAll('+', '')}?text=${Uri.encodeComponent(text)}');
     final ok = await _launch(uri);
@@ -56,8 +68,7 @@ class ReminderService {
   }) async {
     final phone = customer.phoneE164;
     if (phone == null) return false;
-    final text = message ??
-        defaultMessage(shopName: shopName, customerName: customer.name, balance: balance);
+    final text = message ?? _message(customer, balance, shopName);
     final uri = Uri(scheme: 'sms', path: phone, queryParameters: {'body': text});
     final ok = await _launch(uri);
     if (ok) await _log(customer.id, 'sms', balance, byUserId);

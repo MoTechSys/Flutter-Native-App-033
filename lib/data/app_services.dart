@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import '../core/ledger/ledger_service.dart';
+import 'repositories/currency_repository.dart';
 import 'repositories/customer_repository.dart';
 import 'repositories/dashboard_repository.dart';
+import 'repositories/settings_repository.dart';
 import 'repositories/transactions_repository.dart';
 import 'session/session_provider.dart';
 
@@ -13,6 +15,8 @@ class AppServices extends ChangeNotifier {
   final Database db;
   final String deviceId;
   final SessionProvider session;
+  final SettingsRepository settings;
+  late final CurrencyRepository currencies = CurrencyRepository(db);
 
   String? _shopId;
   LedgerService? _ledger;
@@ -20,7 +24,12 @@ class AppServices extends ChangeNotifier {
   TransactionsRepository? _transactions;
   DashboardRepository? _dashboard;
 
-  AppServices({required this.db, required this.deviceId, required this.session}) {
+  AppServices({
+    required this.db,
+    required this.deviceId,
+    required this.session,
+    required this.settings,
+  }) {
     session.addListener(_onSession);
     _onSession();
   }

@@ -17,6 +17,7 @@ class AppUser {
   final bool isOwner;
   final bool hasPin;
   final bool isActive;
+  final Map<String, bool> perms;
   const AppUser({
     required this.id,
     required this.shopId,
@@ -25,6 +26,7 @@ class AppUser {
     required this.isOwner,
     required this.hasPin,
     required this.isActive,
+    this.perms = const {},
   });
 
   factory AppUser.fromRow(Map<String, Object?> r) => AppUser(
@@ -35,9 +37,57 @@ class AppUser {
         isOwner: r['role'] == 'owner',
         hasPin: r['pin_hash'] != null,
         isActive: (r['is_active'] as int? ?? 1) == 1,
+        perms: _parsePerms(r['perms_json']),
       );
 
-  Actor get actor => isOwner ? Actor.owner(id, name) : Actor.worker(id, name);
+  static Map<String, bool> _parsePerms(Object? raw) {
+    if (raw is! String || raw.isEmpty) return const {};
+    try {
+      final m = jsonDecode(raw);
+      if (m is Map) return {for (final e in m.entries) '${e.key}': e.value == true};
+    } catch (_) {}
+    return const {};
+  }
+
+  /// Worker permission keys (docs/06 phase 2 "صلاحيات").
+  static const permReverse = 'reverse';
+  static const permAdjust = 'adjust';
+  static const permBackdate = 'backdate';
+  static const permSeeTotals = 'see_totals';
+  static const permAddCustomer = 'add_customer';
+
+  static const allPerms = [permAddCustomer, permReverse, permAdjust, permBackdate, permSeeTotals];
+
+  static String permLabel(String p) => switch (p) {
+        permAddCustomer => 'إضافة زباين',
+        permReverse => 'عكس الحركات',
+        permAdjust => 'تسويات (خصم/زيادة)',
+        permBackdate => 'تسجيل في فترة مقفلة',
+        permSeeTotals => 'رؤية الإجماليات والتقارير',
+        _ => p,
+      };
+
+  static String permHint(String p) => switch (p) {
+        permAddCustomer => 'إنشاء زبون جديد وتعديل بياناته',
+        permReverse => 'إلغاء حركة بقيد عكسي مع سبب',
+        permAdjust => 'خصم أو زيادة يدوية على الدين',
+        permBackdate => 'حركات بتاريخ قبل قفل الفترة',
+        permSeeTotals => 'إجمالي الديون في الرئيسية وشاشة التقارير',
+        _ => '',
+      };
+
+  bool can(String perm) => isOwner || (perms[perm] ?? false);
+
+  Actor get actor => isOwner
+      ? Actor.owner(id, name)
+      : Actor(
+          userId: id,
+          name: name,
+          isOwner: false,
+          canReverse: perms[permReverse] ?? false,
+          canAdjust: perms[permAdjust] ?? false,
+          canBackdateIntoLocked: perms[permBackdate] ?? false,
+        );
 }
 
 class Shop {
@@ -151,6 +201,66 @@ class SessionProvider extends ChangeNotifier {
     final salt = r.first['pin_salt'] as String?;
     if (hash == null || salt == null) return true; // no PIN set
     return hashPin(pin, salt) == hash;
+  }
+
+  Future<void> updateShop({String? name, String? address, String? phone, String? logoPath, String? extraLine}) async {
+    final id = _shop?.id;
+    if (id == null) return;
+    final v = <String, Object?>{};
+    if (name != null && name.trim().isNotEmpty) v['name'] = name.trim();
+    if (address != null) v['address'] = address.trim().isEmpty ? null : address.trim();
+    if (phone != null) v['phone'] = phone.trim().isEmpty ? null : phone.trim();
+    if (logoPath != null) v['logo_path'] = logoPath.isEmpty ? null : logoPath;
+    if (extraLine != null) v['extra_line'] = extraLine.trim().isEmpty ? null : extraLine.trim();
+    if (v.isEmpty) return;
+    await _db.update('shops', v, where: 'id = ?', whereArgs: [id]);
+    await load();
+  }
+
+  /// Owner adds a worker (or another owner). Returns the new user.
+  Future<AppUser> addUser({
+    required String name,
+    required bool isOwner,
+    String? photoPath,
+    String? pin,
+    Map<String, bool> perms = const {},
+  }) async {
+    final shopId = _shop!.id;
+    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
+    final id = _uuid.v4();
+    final salt = _uuid.v4();
+    await _db.insert('users', {
+      'id': id,
+      'shop_id': shopId,
+      'name': name.trim(),
+      'photo_path': photoPath,
+      'role': isOwner ? 'owner' : 'worker',
+      'pin_hash': pin == null ? null : hashPin(pin, salt),
+      'pin_salt': pin == null ? null : salt,
+      'perms_json': jsonEncode(perms),
+      'is_active': 1,
+      'created_at': now,
+    });
+    await load();
+    return _users.firstWhere((u) => u.id == id);
+  }
+
+  Future<void> updateUser(String id, {String? name, String? photoPath, bool? isActive, Map<String, bool>? perms}) async {
+    final v = <String, Object?>{};
+    if (name != null && name.trim().isNotEmpty) v['name'] = name.trim();
+    if (photoPath != null) v['photo_path'] = photoPath.isEmpty ? null : photoPath;
+    if (isActive != null) v['is_active'] = isActive ? 1 : 0;
+    if (perms != null) v['perms_json'] = jsonEncode(perms);
+    if (v.isEmpty) return;
+    await _db.update('users', v, where: 'id = ?', whereArgs: [id]);
+    await load();
+  }
+
+  /// All users including inactive (for the workers screen).
+  Future<List<AppUser>> allUsers() async {
+    final rows = await _db.query('users', where: 'shop_id = ?', whereArgs: [_shop!.id],
+        orderBy: "CASE role WHEN 'owner' THEN 0 ELSE 1 END, created_at");
+    return rows.map(AppUser.fromRow).toList();
   }
 
   Future<void> setPin(String userId, String? pin) async {

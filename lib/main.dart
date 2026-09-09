@@ -7,8 +7,12 @@ import 'app.dart';
 import 'core/db/app_database.dart';
 import 'core/db/db_factory.dart';
 import 'core/ledger/ledger_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'data/app_services.dart';
+import 'data/backup/backup_service.dart';
 import 'data/demo/demo_seed.dart';
+import 'data/repositories/settings_repository.dart';
 import 'data/session/session_provider.dart';
 
 /// `flutter build web --dart-define=DEMO=true` seeds the demo shop for preview.
@@ -41,13 +45,27 @@ Future<void> main() async {
     await session.login(session.users.first.id); // demo owner
   }
 
-  final services = AppServices(db: adb.db, deviceId: deviceId, session: session);
+  final settings = SettingsRepository(adb.db);
+  await settings.load();
+  final services =
+      AppServices(db: adb.db, deviceId: deviceId, session: session, settings: settings);
+
+  // Daily local backup (docs/06 phase 1). Never blocks startup.
+  if (!kIsWeb && session.hasShop) {
+    final last = settings.get<int?>(SettingsRepository.kLastLocalBackupAt) ?? 0;
+    if (DateTime.now().toUtc().millisecondsSinceEpoch - last > const Duration(hours: 20).inMilliseconds) {
+      BackupService(adb.db, deviceId: deviceId).writeLocal().then((f) {
+        if (f != null) settings.set(SettingsRepository.kLastLocalBackupAt, DateTime.now().toUtc().millisecondsSinceEpoch);
+      }).catchError((_) {});
+    }
+  }
 
   runApp(
     MultiProvider(
       providers: [
         Provider<AppDatabase>.value(value: adb),
         ChangeNotifierProvider<SessionProvider>.value(value: session),
+        ChangeNotifierProvider<SettingsRepository>.value(value: settings),
         ChangeNotifierProvider<AppServices>.value(value: services),
       ],
       child: const SijilApp(),

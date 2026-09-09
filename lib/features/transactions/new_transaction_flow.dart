@@ -8,6 +8,7 @@ import '../../core/money/currency.dart';
 import '../../core/money/money.dart';
 import '../../data/app_services.dart';
 import '../../data/models/customer.dart';
+import '../../data/repositories/settings_repository.dart';
 import '../../data/session/session_provider.dart';
 import '../../shared/l10n/ar_strings.dart';
 import '../../shared/services/speech_service.dart';
@@ -132,6 +133,7 @@ class _FlowHostState extends State<_FlowHost> {
     final s = context.read<AppServices>();
     final session = context.read<SessionProvider>();
     final speech = context.read<SpeechService>();
+    final st = context.read<SettingsRepository>();
     try {
       final tx = await s.ledger.record(
         NewTransaction(
@@ -145,6 +147,20 @@ class _FlowHostState extends State<_FlowHost> {
         session.actor,
       );
       final newBal = await s.ledger.balance(d.customer.id, d.amount!.currency);
+      // Owner alert on big payment by a worker (docs/06 phase 2).
+      final threshold = st.get<int>(SettingsRepository.kBigPaymentAlertMinor);
+      if (!session.isOwner && d.type == TxType.credit && threshold > 0 && d.amount!.minor >= threshold) {
+        await s.db.insert('audit_log', {
+          'id': tx.id, // same id → one alert per tx (PK)
+          'entity': 'alert',
+          'entity_id': tx.id,
+          'action': 'big_payment',
+          'actor_id': session.user?.id,
+          'at': DateTime.now().toUtc().millisecondsSinceEpoch,
+          'after_json': '{"amount":${d.amount!.minor},"customer":"${d.customer.id}"}',
+          'device_id': s.deviceId,
+        }).catchError((_) => 0);
+      }
       speech.speak(SpeechService.transactionSentence(
         customerName: d.customer.name,
         type: d.type!,

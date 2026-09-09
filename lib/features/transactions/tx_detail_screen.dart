@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/ledger/ledger_errors.dart';
 import '../../core/ledger/ledger_models.dart';
-import '../../core/ledger/tx_type.dart';
 import '../../core/money/money_format.dart';
 import '../../data/app_services.dart';
 import '../../data/models/customer.dart';
@@ -12,6 +11,8 @@ import '../../shared/l10n/ar_strings.dart';
 import '../../shared/theme/app_colors.dart';
 import '../../shared/utils/date_labels.dart';
 import '../../shared/widgets/customer_avatar.dart';
+import '../../shared/widgets/app_back_button.dart';
+import '../../shared/l10n/tx_labels.dart';
 
 /// Transaction details + owner-only reversal with mandatory reason (R1, R9).
 class TxDetailScreen extends StatefulWidget {
@@ -108,7 +109,7 @@ class _TxDetailScreenState extends State<TxDetailScreen> {
   Widget build(BuildContext context) {
     final isOwner = context.watch<SessionProvider>().isOwner;
     return Scaffold(
-      appBar: AppBar(title: const Text(S.txDetails)),
+      appBar: AppBar(leading: const AppBackButton(), title: const Text(S.txDetails)),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -150,7 +151,7 @@ class _TxDetailScreenState extends State<TxDetailScreen> {
                     ),
                     child: Column(
                       children: [
-                        Text(_typeLabel(tx.type),
+                        Text(TxLabels.of(context, tx.type),
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w700, color: color)),
                         const SizedBox(height: 4),
@@ -233,13 +234,7 @@ class _TxDetailScreenState extends State<TxDetailScreen> {
     );
   }
 
-  static String _typeLabel(TxType t) => switch (t) {
-        TxType.debit => S.tookFromMe,
-        TxType.credit => S.paidToMe,
-        TxType.adjustDown => S.adjustDown,
-        TxType.adjustUp => S.adjustUp,
-        TxType.opening => 'رصيد سابق',
-      };
+  
 }
 
 class _Row extends StatelessWidget {

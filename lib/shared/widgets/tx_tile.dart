@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../core/ledger/tx_type.dart';
 import '../../core/money/money_format.dart';
 import '../../data/repositories/transactions_repository.dart';
-import '../l10n/ar_strings.dart';
 import '../theme/app_colors.dart';
 import '../utils/date_labels.dart';
 import 'customer_avatar.dart';
+import '../l10n/tx_labels.dart';
 
 /// 72dp transaction row — mockup 03: photo • name + time • coloured amount
 /// with arrow • small icons (🎤 voice, 📷 photo, ↩ reversed).
@@ -67,7 +66,7 @@ class TxTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          showCustomer ? item.customerName : _typeLabel(tx.type),
+                          showCustomer ? item.customerName : TxLabels.of(context, tx.type),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -110,13 +109,7 @@ class TxTile extends StatelessWidget {
     );
   }
 
-  static String _typeLabel(TxType t) => switch (t) {
-        TxType.debit => S.tookFromMe,
-        TxType.credit => S.paidToMe,
-        TxType.adjustDown => S.adjustDown,
-        TxType.adjustUp => S.adjustUp,
-        TxType.opening => 'رصيد سابق',
-      };
+  
 
   static List<Widget> _withGaps(List<Widget> ws) {
     final out = <Widget>[];

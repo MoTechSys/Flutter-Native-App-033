@@ -7,6 +7,7 @@ import '../../../shared/services/speech_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/customer_avatar.dart';
 import '../new_transaction_flow.dart';
+import '../../../shared/l10n/tx_labels.dart';
 
 /// Step 2: two giant buttons 🔴 أخذ مني / 🟢 دفع لي (+ small "تسوية" for owner).
 class TypeStep extends StatelessWidget {
@@ -54,10 +55,10 @@ class TypeStep extends StatelessWidget {
                 child: _Giant(
                   color: AppColors.debt,
                   icon: Icons.arrow_downward_rounded,
-                  label: S.tookFromMe,
+                  label: TxLabels.took(context),
                   hint: 'بضاعة بالدين',
                   onTap: () => onNext(TxType.debit),
-                  onLongPress: () => speech.speak(S.tookFromMe),
+                  onLongPress: () => speech.speak(TxLabels.took(context)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -65,10 +66,10 @@ class TypeStep extends StatelessWidget {
                 child: _Giant(
                   color: AppColors.payment,
                   icon: Icons.arrow_upward_rounded,
-                  label: S.paidToMe,
+                  label: TxLabels.paid(context),
                   hint: 'سدّد من حسابه',
                   onTap: () => onNext(TxType.credit),
-                  onLongPress: () => speech.speak(S.paidToMe),
+                  onLongPress: () => speech.speak(TxLabels.paid(context)),
                 ),
               ),
               if (isOwner) ...[

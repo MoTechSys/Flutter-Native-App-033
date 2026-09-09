@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/ar_strings.dart';
 import '../theme/app_colors.dart';
+import 'app_back_button.dart';
 
 /// Placeholder for routes scheduled in later phases (docs/06_PLAN.md).
 class ComingSoonScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class ComingSoonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(leading: const AppBackButton(), title: Text(title)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),

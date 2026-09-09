@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/ledger/tx_type.dart';
 import '../../../core/money/money.dart';
 import '../../../core/money/money_format.dart';
 import '../../../shared/l10n/ar_strings.dart';
@@ -11,6 +10,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/utils/date_labels.dart';
 import '../../../shared/widgets/customer_avatar.dart';
 import '../new_transaction_flow.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/l10n/tx_labels.dart';
 
 /// Step 4: spoken summary + optional 📷 receipt, 📝 note, ⏰ due date, big save.
 class ConfirmStep extends StatefulWidget {
@@ -103,7 +104,7 @@ class _ConfirmStepState extends State<ConfirmStep> {
     final nb = _newBalance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text(S.confirm)),
+      appBar: AppBar(leading: const AppBackButton(), title: const Text(S.confirm)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -135,7 +136,7 @@ class _ConfirmStepState extends State<ConfirmStep> {
                               Icon(isDebt ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
                                   color: color, size: 30),
                               const SizedBox(width: 6),
-                              Text(_typeTitle(d.type!),
+                              Text(TxLabels.of(context, d.type!),
                                   style: TextStyle(
                                       fontSize: 22, fontWeight: FontWeight.w700, color: color)),
                             ],
@@ -220,13 +221,7 @@ class _ConfirmStepState extends State<ConfirmStep> {
     );
   }
 
-  String _typeTitle(TxType t) => switch (t) {
-        TxType.debit => S.tookFromMe,
-        TxType.credit => S.paidToMe,
-        TxType.adjustDown => S.adjustDown,
-        TxType.adjustUp => S.adjustUp,
-        TxType.opening => 'رصيد سابق',
-      };
+  
 }
 
 class _Extra extends StatelessWidget {

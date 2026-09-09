@@ -9,6 +9,7 @@ import '../../shared/l10n/ar_strings.dart';
 import '../../shared/services/photo_service.dart';
 import '../../shared/theme/app_colors.dart';
 import '../../shared/widgets/customer_avatar.dart';
+import '../../shared/widgets/app_back_button.dart';
 
 /// Add or edit a customer. Photo is the hero — the biggest control on screen
 /// (docs/03 §6.6, D10). Returns the customer id on save.
@@ -130,7 +131,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_isEdit ? S.edit : S.addCustomer)),
+      appBar: AppBar(leading: const AppBackButton(), title: Text(_isEdit ? S.edit : S.addCustomer)),
       body: SafeArea(
         child: Column(
           children: [

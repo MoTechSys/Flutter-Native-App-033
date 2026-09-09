@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/ledger/tx_type.dart';
 import '../../../core/money/arabic_words.dart';
 import '../../../core/money/currency.dart';
 import '../../../core/money/money.dart';
@@ -13,6 +12,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/customer_avatar.dart';
 import '../new_transaction_flow.dart';
 import '../widgets/banknote.dart';
+import '../../../shared/widgets/app_back_button.dart';
+import '../../../shared/l10n/tx_labels.dart';
 
 /// Step 3 — reference `04_amount_entry_banknotes_ref.png`:
 /// customer + balance on top, huge amount, selected-notes strip, banknote
@@ -146,7 +147,8 @@ class _AmountStepState extends State<AmountStep> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_typeTitle(type)),
+        leading: const AppBackButton(),
+        title: Text(TxLabels.of(context, type)),
         actions: [
           IconButton(
             iconSize: 28,
@@ -301,7 +303,7 @@ class _AmountStepState extends State<AmountStep> {
                   style: FilledButton.styleFrom(backgroundColor: color),
                   onPressed: amount.isZero ? null : _next,
                   icon: const Icon(Icons.check_rounded, size: 30),
-                  label: Text(_typeTitle(type), style: const TextStyle(fontSize: 22)),
+                  label: Text(TxLabels.of(context, type), style: const TextStyle(fontSize: 22)),
                 ),
               ),
             ),
@@ -344,13 +346,7 @@ class _AmountStepState extends State<AmountStep> {
     });
   }
 
-  String _typeTitle(TxType t) => switch (t) {
-        TxType.debit => S.tookFromMe,
-        TxType.credit => S.paidToMe,
-        TxType.adjustDown => S.adjustDown,
-        TxType.adjustUp => S.adjustUp,
-        TxType.opening => 'رصيد سابق',
-      };
+  
 
   String _balanceLine(Money? b) {
     if (b == null) return '';

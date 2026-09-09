@@ -6,6 +6,7 @@ class AppRoutes {
   static const login = '/login';
   static const onboarding = '/onboarding';
   static const txDetail = '/transactions/detail';
+  static const documents = '/documents';
   static const customers = '/customers';
   static const customerDetail = '/customers/detail';
   static const newTransaction = '/transactions/new';

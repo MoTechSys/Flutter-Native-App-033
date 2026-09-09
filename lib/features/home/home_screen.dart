@@ -7,6 +7,7 @@ import '../../core/money/money_format.dart';
 import '../../core/money/arabic_words.dart';
 import '../../data/app_services.dart';
 import '../../data/repositories/dashboard_repository.dart';
+import '../../data/repositories/settings_repository.dart';
 import '../../data/session/session_provider.dart';
 import '../../shared/services/speech_service.dart';
 import '../../shared/l10n/ar_strings.dart';
@@ -32,13 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _future = context.read<AppServices>().dashboard.load();
+    _future = _load();
   }
+
+  Future<DashboardData> _load() => context
+      .read<AppServices>()
+      .dashboard
+      .load(overdueDays: context.read<SettingsRepository>().overdueDays);
 
   /// Reload after any navigation away (a transaction may have been saved).
   Future<void> _push(String route, {Object? args}) async {
     await Navigator.pushNamed(context, route, arguments: args);
-    if (mounted) setState(() => _future = context.read<AppServices>().dashboard.load());
+    if (mounted) setState(() => _future = _load());
   }
 
   @override
@@ -88,7 +94,12 @@ class _Dashboard extends StatelessWidget {
         children: [
           _Header(data: data, push: push),
           const SizedBox(height: 12),
-          Expanded(flex: 24, child: HeroCard(data: data)),
+          Expanded(
+            flex: 24,
+            child: (context.watch<SessionProvider>().user?.can(AppUser.permSeeTotals) ?? true)
+                ? HeroCard(data: data)
+                : const _WorkerHero(),
+          ),
           const SizedBox(height: 12),
           Expanded(
             flex: 21,
@@ -427,6 +438,37 @@ class _RecentRow extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+
+/// D12: workers without `see_totals` get a neutral hero — no shop totals.
+class _WorkerHero extends StatelessWidget {
+  const _WorkerHero();
+  @override
+  Widget build(BuildContext context) {
+    final u = context.watch<SessionProvider>().user;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+            colors: [AppColors.primary, AppColors.primaryLight],
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CustomerAvatar(name: u?.name ?? '', photoPath: u?.photoPath, size: 72, borderColor: Colors.white),
+          const SizedBox(height: 10),
+          Text('مرحباً ${u?.name ?? ''}',
+              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+          const Text('اختر زبوناً وسجّل العملية',
+              style: TextStyle(color: Colors.white70, fontSize: 14)),
+        ],
+      ),
     );
   }
 }
